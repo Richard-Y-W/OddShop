@@ -285,8 +285,7 @@ function renderCart() {
           </div>
         `;
       }).join("")}
-      ${cartPassport()}
-      ${cartBadges()}
+      ${cartBagSummary()}
       <div class="bill-box">
         <div><span>Subtotal</span><strong>${credits(total)}</strong></div>
         <div><span>OddPrime delivery</span><strong>0 credits</strong></div>
@@ -297,48 +296,15 @@ function renderCart() {
     : `<div class="empty-state">Your cart is empty. This is financially responsible, but less fun.</div>`;
 }
 
-function cartPassport() {
-  const categories = ["OF", "KI", "HO", "TE", "CO"];
-  const owned = new Set(state.cart.map((item) => getProduct(item.id).category.slice(0, 2).toUpperCase()));
+function cartBagSummary() {
+  const categories = [...new Set(state.cart.map((item) => getProduct(item.id).category))];
   return `
-    <div class="passport-box">
-      <div class="passport-head">
-        <strong>🧾 Shopper Passport</strong>
-        <span>${owned.size}/${categories.length} aisles</span>
+    <div class="bag-summary">
+      <div>
+        <strong>Almost purchased</strong>
+        <span>${categories.join(", ")}</span>
       </div>
-      <div class="stamp-row">
-        ${categories.map((code) => `<span class="${owned.has(code) ? "active" : ""}">${code}</span>`).join("")}
-      </div>
-      <p>Collect one object from every aisle to complete the imaginary errand.</p>
-    </div>
-  `;
-}
-
-function cartBadges() {
-  const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
-  const total = cartTotal();
-  const badges = [
-    ["🛒", "First Add", count > 0],
-    ["✨", "Cart Curator", count >= 3],
-    ["📦", "Box Magnet", total >= 500],
-    ["🧠", "Dopamine Ready", state.wishlist.length > 0],
-    ["🏷️", "Deal Believer", total < 250],
-    ["🚚", "Courier Fan", state.orders.length > 0]
-  ];
-  return `
-    <div class="badge-box">
-      <div class="passport-head">
-        <strong>🏅 Badges</strong>
-        <span>${badges.filter((badge) => badge[2]).length}/${badges.length}</span>
-      </div>
-      <div class="badge-grid">
-        ${badges.map(([icon, label, active]) => `
-          <span class="${active ? "active" : ""}">
-            <i>${icon}</i>
-            ${label}
-          </span>
-        `).join("")}
-      </div>
+      <p>Your bag is saved locally in this browser. No account, checkout data, or personal information required.</p>
     </div>
   `;
 }
