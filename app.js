@@ -168,8 +168,10 @@ const els = {
   wishlistCount: document.getElementById("wishlistCount"),
   cartTotal: document.getElementById("cartTotal"),
   modal: document.getElementById("productModal"),
+  trackingModal: document.getElementById("trackingModal"),
   modalBackdrop: document.getElementById("modalBackdrop"),
   modalContent: document.getElementById("modalContent"),
+  trackingModalContent: document.getElementById("trackingModalContent"),
   toast: document.getElementById("toast"),
   filters: document.getElementById("filters")
 };
@@ -261,7 +263,12 @@ function renderCart() {
   const total = state.cart.reduce((sum, item) => sum + getProduct(item.id).price * item.qty, 0);
   els.cartTotal.textContent = credits(total);
   els.cartItems.innerHTML = state.cart.length
-    ? state.cart.map((item) => {
+    ? `
+      <div class="tray-banner">
+        <strong>🛍️ Your bag</strong>
+        <span>${state.cart.reduce((sum, item) => sum + item.qty, 0)} pretend item${state.cart.length === 1 ? "" : "s"} · tap checkout when the craving peaks</span>
+      </div>
+      ${state.cart.map((item) => {
         const product = getProduct(item.id);
         return `
           <div class="line-item">
@@ -277,8 +284,63 @@ function renderCart() {
             </div>
           </div>
         `;
-      }).join("")
+      }).join("")}
+      ${cartPassport()}
+      ${cartBadges()}
+      <div class="bill-box">
+        <div><span>Subtotal</span><strong>${credits(total)}</strong></div>
+        <div><span>OddPrime delivery</span><strong>0 credits</strong></div>
+        <div><span>Joy tax</span><strong>0 credits</strong></div>
+        <div class="bill-total"><span>To pay</span><strong>${credits(total)}</strong></div>
+      </div>
+    `
     : `<div class="empty-state">Your cart is empty. This is financially responsible, but less fun.</div>`;
+}
+
+function cartPassport() {
+  const categories = ["OF", "KI", "HO", "TE", "CO"];
+  const owned = new Set(state.cart.map((item) => getProduct(item.id).category.slice(0, 2).toUpperCase()));
+  return `
+    <div class="passport-box">
+      <div class="passport-head">
+        <strong>🧾 Shopper Passport</strong>
+        <span>${owned.size}/${categories.length} aisles</span>
+      </div>
+      <div class="stamp-row">
+        ${categories.map((code) => `<span class="${owned.has(code) ? "active" : ""}">${code}</span>`).join("")}
+      </div>
+      <p>Collect one object from every aisle to complete the imaginary errand.</p>
+    </div>
+  `;
+}
+
+function cartBadges() {
+  const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+  const total = cartTotal();
+  const badges = [
+    ["🛒", "First Add", count > 0],
+    ["✨", "Cart Curator", count >= 3],
+    ["📦", "Box Magnet", total >= 500],
+    ["🧠", "Dopamine Ready", state.wishlist.length > 0],
+    ["🏷️", "Deal Believer", total < 250],
+    ["🚚", "Courier Fan", state.orders.length > 0]
+  ];
+  return `
+    <div class="badge-box">
+      <div class="passport-head">
+        <strong>🏅 Badges</strong>
+        <span>${badges.filter((badge) => badge[2]).length}/${badges.length}</span>
+      </div>
+      <div class="badge-grid">
+        ${badges.map(([icon, label, active]) => `
+          <span class="${active ? "active" : ""}">
+            <i>${icon}</i>
+            ${label}
+          </span>
+        `).join("")}
+      </div>
+    </div>
+  `;
 }
 
 function renderWishlist() {
@@ -363,7 +425,7 @@ function checkoutStepContent(total) {
   if (state.checkoutStep === 0) {
     return `
       <section class="checkout-section">
-        <h3>Review your pretend cart</h3>
+        <h3>🧾 Your order</h3>
         ${state.cart.map((item) => {
           const product = getProduct(item.id);
           return `
@@ -379,13 +441,15 @@ function checkoutStepContent(total) {
         <div class="delivery-card">OddPrime is active. No actual money, no actual trucks, maximum tiny anticipation.</div>
       </section>
       <section class="checkout-section">
-        <h3>Order summary</h3>
+        <h3>Bill details</h3>
         <div class="summary-table">
           <div class="summary-row"><span>Items</span><strong>${credits(total)}</strong></div>
+          <div class="summary-row savings"><span>Item discount</span><strong>- ${credits(Math.ceil(total * 0.18))}</strong></div>
           <div class="summary-row"><span>Shipping</span><strong>0 credits</strong></div>
-          <div class="summary-row"><span>Tax on imaginary goods</span><strong>0 credits</strong></div>
+          <div class="summary-row"><span>Taxes & charges</span><strong>0 credits</strong></div>
           <div class="summary-row"><span>Total</span><strong>${credits(total)}</strong></div>
         </div>
+        <div class="delivery-card">🎉 You saved ${credits(Math.ceil(total * 0.18))} on this order and still pay $0.</div>
       </section>
     `;
   }
@@ -452,6 +516,7 @@ function checkoutStepContent(total) {
         <div class="summary-row"><span>Delivery</span><strong>${shippingLabel()}</strong></div>
         <div class="summary-row"><span>Total</span><strong>${credits(total)}</strong></div>
       </div>
+      <div class="delivery-card">The product will not come, but the delivery ping will.</div>
     </section>
   `;
 }
@@ -473,6 +538,9 @@ function orderCard(order) {
         </div>
         ${trackingMap(status.index)}
         <div class="tracking-detail">${status.detail}</div>
+        <div class="mini-actions">
+          <button data-track-order="${order.number}">View live tracking</button>
+        </div>
         ${status.index === 3 ? `
           <div class="arrival-scene delivered-pop">
             <div class="confetti" aria-hidden="true">
@@ -486,6 +554,57 @@ function orderCard(order) {
       </div>
     </article>
   `;
+}
+
+function trackingModal(orderNumber) {
+  const order = state.orders.find((entry) => entry.number === orderNumber);
+  if (!order) return;
+  const product = getProduct(order.id);
+  const status = orderStatus(order.createdAt);
+  const minutes = Math.max(0, 4 - status.index);
+  els.trackingModalContent.innerHTML = `
+    <div class="tracking-hero">
+      <p class="eyebrow">${status.index === 3 ? "Package delivered" : "On the way"}</p>
+      <h2>${status.index === 3 ? "It's here!" : "Your package is moving"}</h2>
+      <p>Order #${order.number} · “paid” ${credits(product.price * order.qty)}</p>
+    </div>
+    ${trackingMap(status.index)}
+    <div class="arrival-card">
+      <div>
+        <h3>${status.index === 3 ? "Delivered just now" : `Arriving in ~${minutes} min`}</h3>
+        <p>${status.detail}</p>
+      </div>
+      <strong>${status.index === 3 ? "✓" : minutes}</strong>
+    </div>
+    <div class="courier-card">
+      <span>🚚</span>
+      <div>
+        <strong>Buzz the Box is on the way</strong>
+        <p>box-lining straight to your imaginary destination</p>
+      </div>
+      <button>☎</button>
+    </div>
+    <div class="tracking-list">
+      ${["Order confirmed", "Warehouse packed your object", "Courier picked up your package", "Delivered to your door"].map((label, index) => `
+        <div class="${index <= status.index ? "active" : ""}">
+          <span>${["✅", "🔎", "🛵", "🏠"][index]}</span>
+          <strong>${label}</strong>
+        </div>
+      `).join("")}
+    </div>
+    ${status.index === 3 ? `
+      <div class="arrival-scene delivered-pop">
+        <div class="confetti" aria-hidden="true">
+          ${Array.from({ length: 22 }, (_, index) => `<i style="--i:${index};"></i>`).join("")}
+        </div>
+        <div class="box-graphic" aria-hidden="true"></div>
+        <strong>${product.name} is here.</strong>
+        <span>Nothing arrived, but the feeling did.</span>
+      </div>
+    ` : ""}
+  `;
+  els.trackingModal.hidden = false;
+  els.modalBackdrop.hidden = false;
 }
 
 function trackingMap(index) {
@@ -622,6 +741,7 @@ function openProduct(id) {
 
 function closeModal() {
   els.modal.hidden = true;
+  els.trackingModal.hidden = true;
   els.modalBackdrop.hidden = true;
 }
 
@@ -666,6 +786,7 @@ document.addEventListener("click", (event) => {
     save();
     renderCheckout();
   }
+  if (target.dataset.trackOrder) trackingModal(target.dataset.trackOrder);
   if (target.dataset.category) selectCategory(target.dataset.category);
   if (target.dataset.placeOrder !== undefined) placeOrder();
   if (target.dataset.closeDrawer !== undefined) closeDrawers();
@@ -685,6 +806,7 @@ document.getElementById("checkoutButton").addEventListener("click", () => {
   openDrawer(els.checkoutDrawer);
 });
 document.getElementById("closeModal").addEventListener("click", closeModal);
+document.getElementById("closeTrackingModal").addEventListener("click", closeModal);
 els.modalBackdrop.addEventListener("click", closeModal);
 
 document.getElementById("menuButton").addEventListener("click", () => {
