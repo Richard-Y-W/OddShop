@@ -1,0 +1,40 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #1b1226;
+  font-family: 'Nunito', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Material Symbols glyph helper */
+.mi {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+}
+
+/* Hide scrollbars on horizontal chip rows / device scroll */
+.ynoscroll::-webkit-scrollbar { display: none; }
+.ynoscroll { scrollbar-width: none; }
+
+/* ── Animations carried over from the design ── */
+@keyframes yshine { 0% { transform: translateX(-160%); } 55%, 100% { transform: translateX(360%); } }
+@keyframes ypulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+@keyframes yspin  { to { transform: rotate(360deg); } }
+@keyframes yfloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ypop   { 0% { transform: scale(.7); opacity: 0; } 70% { transform: scale(1.07); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes ydot   { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+@keyframes mochiBob   { 0%, 100% { transform: translateY(0) rotate(-2.5deg); } 50% { transform: translateY(-6px) rotate(2.5deg); } }
+@keyframes mochiBlink { 0%, 91%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.12); } }
