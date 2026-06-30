@@ -170,6 +170,7 @@ const els = {
   modal: document.getElementById("productModal"),
   modalBackdrop: document.getElementById("modalBackdrop"),
   modalContent: document.getElementById("modalContent"),
+  toast: document.getElementById("toast"),
   filters: document.getElementById("filters")
 };
 
@@ -515,7 +516,27 @@ function addToCart(id) {
   else state.cart.push({ id, qty: 1 });
   save();
   renderDrawers();
+  showToast(`${getProduct(id).name} is in your pretend cart.`);
   openDrawer(els.cartDrawer);
+}
+
+function showToast(message) {
+  els.toast.textContent = message;
+  els.toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => {
+    els.toast.classList.remove("show");
+  }, 1800);
+}
+
+function selectCategory(category) {
+  state.category = category;
+  document.querySelectorAll(".filter").forEach((filter) => {
+    filter.classList.toggle("active", filter.dataset.category === category);
+  });
+  els.filters.classList.remove("open");
+  renderProducts();
+  document.querySelector(".storefront").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function toggleWishlist(id) {
@@ -645,6 +666,7 @@ document.addEventListener("click", (event) => {
     save();
     renderCheckout();
   }
+  if (target.dataset.category) selectCategory(target.dataset.category);
   if (target.dataset.placeOrder !== undefined) placeOrder();
   if (target.dataset.closeDrawer !== undefined) closeDrawers();
 });
@@ -652,6 +674,7 @@ document.addEventListener("click", (event) => {
 document.getElementById("cartButton").addEventListener("click", () => openDrawer(els.cartDrawer));
 document.getElementById("wishlistButton").addEventListener("click", () => openDrawer(els.wishlistDrawer));
 document.getElementById("ordersButton").addEventListener("click", () => openDrawer(els.ordersDrawer));
+document.getElementById("heroOrdersButton").addEventListener("click", () => openDrawer(els.ordersDrawer));
 document.getElementById("mobileCart").addEventListener("click", () => openDrawer(els.cartDrawer));
 document.getElementById("mobileWishlist").addEventListener("click", () => openDrawer(els.wishlistDrawer));
 document.getElementById("mobileOrders").addEventListener("click", () => openDrawer(els.ordersDrawer));
@@ -701,11 +724,7 @@ els.sort.addEventListener("change", () => {
 
 document.querySelectorAll(".filter").forEach((button) => {
   button.addEventListener("click", () => {
-    state.category = button.dataset.category;
-    document.querySelectorAll(".filter").forEach((filter) => filter.classList.remove("active"));
-    button.classList.add("active");
-    els.filters.classList.remove("open");
-    renderProducts();
+    selectCategory(button.dataset.category);
   });
 });
 

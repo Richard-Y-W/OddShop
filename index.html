@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OddCart</title>
+    <title>OddShop</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -12,9 +12,9 @@
         <button class="icon-button menu-button" id="menuButton" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
-        <button class="brand" id="homeButton" aria-label="OddCart home">
-          <span class="brand-mark">OC</span>
-          <span>OddCart</span>
+        <button class="brand" id="homeButton" aria-label="OddShop home">
+          <span class="brand-mark">OS</span>
+          <span>OddShop</span>
         </button>
         <div class="search-wrap">
           <input id="searchInput" type="search" placeholder="Search imaginary products" autocomplete="off" />
@@ -34,12 +34,44 @@
       </header>
 
       <main>
+        <section class="announcement">
+          <span>Zero dollars spent today</span>
+          <span>No account. No card. No checkout guilt.</span>
+          <span>Packages arrive emotionally, not physically.</span>
+        </section>
+
         <section class="hero-strip">
           <div>
-            <p class="eyebrow">No money. No shipping. Full checkout feeling.</p>
-            <h1>Shop things that absolutely do not need to exist.</h1>
+            <p class="eyebrow">Online shopping simulator</p>
+            <h1>All the joy of buying. None of the financial pain.</h1>
+            <p class="hero-copy">Browse fake products, fill a cart, tap through pretend checkout, follow the tiny carrier, and get the best part: it says your package is here.</p>
+            <div class="hero-actions">
+              <button id="dailyDealButton">Start with today's fake deal</button>
+              <button class="ghost-button" id="heroOrdersButton">Track past orders</button>
+            </div>
           </div>
-          <button id="dailyDealButton">Today's fake deal</button>
+          <div class="hero-graphic" aria-hidden="true">
+            <div class="phone-frame">
+              <div class="phone-bar"></div>
+              <div class="mini-card"></div>
+              <div class="mini-card short"></div>
+              <div class="mini-button"></div>
+            </div>
+            <div class="floating-box">
+              <span></span>
+            </div>
+            <div class="receipt-slip">
+              <strong>Delivered</strong>
+              <small>0 credits charged</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="promo-row">
+          <button data-category="Collectible">Limited nonsense</button>
+          <button data-category="Tech">Pretend gadgets</button>
+          <button data-category="Home">Domestic objects</button>
+          <button data-category="Office">Office artifacts</button>
         </section>
 
         <section class="content-grid">
@@ -137,6 +169,8 @@
       <button class="icon-button close-button modal-close" id="closeModal" aria-label="Close product">x</button>
       <div id="modalContent"></div>
     </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <nav class="mobile-nav">
       <button id="mobileShop">Shop</button>

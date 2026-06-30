@@ -2,7 +2,7 @@
 
 All the joy of buying, none of the financial pain.
 
-OddShop is a tiny fake shopping simulator: browse whimsical products, add them to a cart, choose pretend checkout options, track the tiny delivery truck, and celebrate when the order says "It's here."
+OddShop is a fake online shopping dopamine toy: browse whimsical products, fill a cart, choose pretend checkout options, follow the tiny delivery truck on a map, and celebrate when the order says "It's here."
 
 ```
       _________
@@ -15,12 +15,12 @@ OddShop is a tiny fake shopping simulator: browse whimsical products, add them t
 
 ## What It Does
 
-- Fake storefront with search, categories, product pages, ratings, and reviews
+- Polished fake storefront with search, categories, product pages, ratings, and reviews
 - Wishlist and cart
 - Checkout flow with only pretend choices
 - No real address, no real card, no personal information
 - Fake shipping tracker with a mini map
-- Confetti and a delivery moment when the order arrives
+- Confetti and a cute delivery moment when the order arrives
 - Order history stored locally in the browser
 
 ## Run It
