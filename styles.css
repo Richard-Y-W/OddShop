@@ -335,6 +335,89 @@ button {
   box-shadow: 0 8px 20px rgba(31, 37, 40, 0.08);
 }
 
+.shopping-rail {
+  width: min(1180px, calc(100% - 32px));
+  margin: 18px auto 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 24px rgba(31, 37, 40, 0.07);
+}
+
+.rail-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rail-heading h2 {
+  margin: 2px 0 0;
+  color: #273136;
+  font-size: 24px;
+}
+
+.rail-heading .ghost-button {
+  width: auto;
+  padding: 0 14px;
+}
+
+.mini-product-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mini-product {
+  display: grid;
+  grid-template-rows: 112px 1fr auto;
+  gap: 10px;
+  min-height: 260px;
+  padding: 10px;
+  border: 1px solid #e4ded4;
+  border-radius: 14px;
+  background: white;
+}
+
+.mini-product-image {
+  overflow: hidden;
+  border: 0;
+  border-radius: 11px;
+  background: var(--soft);
+  padding: 0;
+}
+
+.mini-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mini-product h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.mini-product p {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.mini-product strong {
+  color: #9b2d24;
+  font-size: 14px;
+}
+
+.mini-product .secondary-button {
+  min-height: 34px;
+}
+
 .eyebrow {
   margin: 0;
   color: var(--teal-dark);
@@ -1324,6 +1407,38 @@ button {
   background: #f8f3e7;
 }
 
+.modal-related {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfdf9;
+}
+
+.modal-related > strong {
+  color: #273136;
+}
+
+.modal-related button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  padding: 8px 0 0;
+  text-align: left;
+}
+
+.modal-related small {
+  color: #9b2d24;
+  font-weight: 900;
+}
+
 .mobile-nav {
   position: fixed;
   bottom: 0;
@@ -1376,6 +1491,10 @@ button {
   }
 
   .promo-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mini-product-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1443,6 +1562,18 @@ button {
   }
 
   .promo-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rail-heading {
+    display: grid;
+  }
+
+  .rail-heading .ghost-button {
+    width: 100%;
+  }
+
+  .mini-product-row {
     grid-template-columns: 1fr;
   }
 

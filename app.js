@@ -12,7 +12,8 @@ const products = [
     condition: "Lightly sighed in",
     delivery: "Arrives in 47 fake minutes",
     seller: "Cubicle Outlet",
-    review: "It rolled away during a status update. Five stars."
+    review: "It rolled away during a status update. Five stars.",
+    tags: ["work", "furniture", "absurd", "status"]
   },
   {
     id: "toaster-witness",
@@ -27,7 +28,8 @@ const products = [
     condition: "Refurbished by breakfast",
     delivery: "Arrives before imaginary brunch",
     seller: "Countertop Classics",
-    review: "Made my bagel feel judged, which improved texture."
+    review: "Made my bagel feel judged, which improved texture.",
+    tags: ["kitchen", "chrome", "breakfast", "appliance"]
   },
   {
     id: "printer-haunted",
@@ -42,7 +44,8 @@ const products = [
     condition: "Spiritually open box",
     delivery: "Out for spectral delivery",
     seller: "Device Dungeon",
-    review: "It found the Wi-Fi once. I still think about it."
+    review: "It found the Wi-Fi once. I still think about it.",
+    tags: ["tech", "wireless", "office", "haunted"]
   },
   {
     id: "lamp-meeting",
@@ -57,7 +60,8 @@ const products = [
     condition: "Emotionally dented",
     delivery: "Arrives after one calendar refresh",
     seller: "Soft Light Surplus",
-    review: "Created ambiance without resolving anything."
+    review: "Created ambiance without resolving anything.",
+    tags: ["home", "desk", "office", "light"]
   },
   {
     id: "coupon-expired",
@@ -72,7 +76,8 @@ const products = [
     condition: "Mint, but useless",
     delivery: "Delivered by lunar paperwork",
     seller: "Orbit Receipts",
-    review: "Could not redeem it. Framing it anyway."
+    review: "Could not redeem it. Framing it anyway.",
+    tags: ["collectible", "paper", "space", "limited"]
   },
   {
     id: "hdmi-support",
@@ -87,7 +92,8 @@ const products = [
     condition: "New in coping sleeve",
     delivery: "Arrives when your monitor forgives you",
     seller: "Cable Feelings Inc.",
-    review: "My second screen finally felt seen."
+    review: "My second screen finally felt seen.",
+    tags: ["tech", "cable", "desk", "support"]
   },
   {
     id: "crouton-luxury",
@@ -102,7 +108,8 @@ const products = [
     condition: "Dry aged",
     delivery: "Arrives in a padded envelope",
     seller: "Salad Authority",
-    review: "Too powerful for soup. Perfect for display."
+    review: "Too powerful for soup. Perfect for display.",
+    tags: ["kitchen", "food", "tiny", "luxury"]
   },
   {
     id: "receipt-nothing",
@@ -117,7 +124,8 @@ const products = [
     condition: "Archival nonsense",
     delivery: "Ships in a legal-size sigh",
     seller: "Paperwork Museum",
-    review: "Finally, a receipt that understands me."
+    review: "Finally, a receipt that understands me.",
+    tags: ["collectible", "paper", "receipt", "archive"]
   },
   {
     id: "desk-invisible",
@@ -132,7 +140,8 @@ const products = [
     condition: "Unseen",
     delivery: "Carrier cannot confirm location",
     seller: "Minimal Maximal",
-    review: "I misplaced it immediately. Very clean look."
+    review: "I misplaced it immediately. Very clean look.",
+    tags: ["office", "furniture", "minimal", "desk"]
   }
 ];
 
@@ -155,6 +164,10 @@ const els = {
   grid: document.getElementById("productGrid"),
   search: document.getElementById("searchInput"),
   resultsTitle: document.getElementById("resultsTitle"),
+  recentRail: document.getElementById("recentRail"),
+  recentGrid: document.getElementById("recentGrid"),
+  relatedGrid: document.getElementById("relatedGrid"),
+  relatedTitle: document.getElementById("relatedTitle"),
   sort: document.getElementById("sortSelect"),
   cartDrawer: document.getElementById("cartDrawer"),
   checkoutDrawer: document.getElementById("checkoutDrawer"),
@@ -223,6 +236,7 @@ function renderProducts() {
   const items = filteredProducts();
   els.resultsTitle.textContent = state.search ? `Results for "${state.search}"` : `${state.category} products`;
   els.grid.innerHTML = items.map(productCard).join("") || `<div class="empty-state">No fake products found.</div>`;
+  renderRecommendationRails();
 }
 
 function productCard(product) {
@@ -255,8 +269,68 @@ function renderDrawers() {
   renderWishlist();
   renderOrders();
   renderCheckout();
+  renderRecommendationRails();
   els.cartCount.textContent = state.cart.reduce((sum, item) => sum + item.qty, 0);
   els.wishlistCount.textContent = state.wishlist.length;
+}
+
+function renderRecommendationRails(seedId) {
+  const recent = recentProducts();
+  els.recentRail.hidden = recent.length === 0;
+  els.recentGrid.innerHTML = recent.map(miniProductCard).join("");
+
+  const seed = seedId || recent[0]?.id || state.cart[0]?.id || state.wishlist[0] || "receipt-nothing";
+  const related = relatedProducts(seed, 5);
+  const seedProduct = getProduct(seed);
+  els.relatedTitle.textContent = seedProduct ? `Related to ${seedProduct.name}` : "Related items";
+  els.relatedGrid.innerHTML = related.map(miniProductCard).join("");
+}
+
+function recentProducts() {
+  const seen = new Set();
+  return state.orders
+    .map((order) => getProduct(order.id))
+    .filter((product) => {
+      if (!product || seen.has(product.id)) return false;
+      seen.add(product.id);
+      return true;
+    })
+    .slice(0, 5);
+}
+
+function relatedProducts(seedId, limit = 4) {
+  const seed = getProduct(seedId);
+  if (!seed) return products.slice(0, limit);
+  return products
+    .filter((product) => product.id !== seed.id)
+    .map((product) => ({ product, score: relatedScore(seed, product) }))
+    .sort((a, b) => b.score - a.score || b.product.rating - a.product.rating)
+    .slice(0, limit)
+    .map((entry) => entry.product);
+}
+
+function relatedScore(seed, product) {
+  const seedTags = new Set(seed.tags || []);
+  const sharedTags = (product.tags || []).filter((tag) => seedTags.has(tag)).length;
+  const categoryScore = seed.category === product.category ? 4 : 0;
+  const priceScore = Math.max(0, 3 - Math.abs(seed.price - product.price) / 150);
+  return categoryScore + sharedTags * 2 + priceScore + product.rating / 10;
+}
+
+function miniProductCard(product) {
+  return `
+    <article class="mini-product">
+      <button class="mini-product-image" data-view="${product.id}" aria-label="View ${product.name}">
+        <img src="${product.image}" alt="${product.name}" loading="lazy">
+      </button>
+      <div>
+        <h3>${product.name}</h3>
+        <p>${product.category} · ${product.badge}</p>
+        <strong>${credits(product.price)}</strong>
+      </div>
+      <button class="secondary-button" data-cart="${product.id}">Add</button>
+    </article>
+  `;
 }
 
 function renderCart() {
@@ -657,6 +731,7 @@ function placeOrder() {
   state.checkoutStep = 0;
   save();
   renderDrawers();
+  renderRecommendationRails();
   openDrawer(els.ordersDrawer);
 }
 
@@ -675,6 +750,8 @@ function closeDrawers() {
 
 function openProduct(id) {
   const product = getProduct(id);
+  const related = relatedProducts(id, 3);
+  renderRecommendationRails(id);
   els.modalContent.innerHTML = `
     <div class="modal-layout">
       <img src="${product.image}" alt="${product.name}">
@@ -697,6 +774,15 @@ function openProduct(id) {
         <div class="review-box">
           <strong>Top fake review</strong>
           <p>"${product.review}"</p>
+        </div>
+        <div class="modal-related">
+          <strong>Related fake finds</strong>
+          ${related.map((item) => `
+            <button data-view="${item.id}">
+              <span>${item.name}</span>
+              <small>${credits(item.price)}</small>
+            </button>
+          `).join("")}
         </div>
       </div>
     </div>
@@ -762,6 +848,12 @@ document.getElementById("cartButton").addEventListener("click", () => openDrawer
 document.getElementById("wishlistButton").addEventListener("click", () => openDrawer(els.wishlistDrawer));
 document.getElementById("ordersButton").addEventListener("click", () => openDrawer(els.ordersDrawer));
 document.getElementById("heroOrdersButton").addEventListener("click", () => openDrawer(els.ordersDrawer));
+document.getElementById("clearRecentButton").addEventListener("click", () => {
+  state.orders = [];
+  save();
+  renderDrawers();
+  showToast("Recently bought was cleared from this browser.");
+});
 document.getElementById("mobileCart").addEventListener("click", () => openDrawer(els.cartDrawer));
 document.getElementById("mobileWishlist").addEventListener("click", () => openDrawer(els.wishlistDrawer));
 document.getElementById("mobileOrders").addEventListener("click", () => openDrawer(els.ordersDrawer));

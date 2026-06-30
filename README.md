@@ -22,6 +22,11 @@ OddShop is a fake online shopping dopamine toy: browse whimsical products, fill 
 - Fake shipping tracker with a mini map
 - Confetti and a cute delivery moment when the order arrives
 - Order history stored locally in the browser
+- Recently bought and related item rails powered by local browser state
+
+## Recommendations
+
+The MVP does not use vector search or a server profile. Related items are ranked locally from product category, tags, price similarity, and rating. Recently bought items come from the fake order history in `localStorage`.
 
 ## Run It
 
