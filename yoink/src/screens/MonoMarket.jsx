@@ -16,9 +16,20 @@ const {
   attentionBadgeText,
 } = marketTheme;
 
-function ListingCard({ item }) {
+function ListingCard({ item, onOpenProduct = () => {} }) {
   return (
-    <div style={s("position:relative;display:flex;gap:11px;background:#fff;border:1px solid #EDEAF6;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(23,19,38,.05)")}>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpenProduct(item, 'listing')}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpenProduct(item, 'listing');
+        }
+      }}
+      style={s("position:relative;display:flex;gap:11px;background:#fff;border:1px solid #EDEAF6;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(23,19,38,.05);cursor:pointer")}
+    >
       <div style={s(`position:relative;width:96px;height:96px;flex:none;border-radius:10px;overflow:hidden;background:${item.stripe}`)}>
         <div style={s("position:absolute;bottom:4px;left:4px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.85);font:600 8px ui-monospace,Menlo,monospace;color:#6E6A7A;white-space:nowrap")}>
           {item.img}
@@ -65,7 +76,22 @@ function ListingCard({ item }) {
               <span>&middot; {item.seller} {item.fb}</span>
             </div>
           </div>
-          <div style={s(`background:${brand};color:#fff;font:700 12px 'Fredoka';padding:8px 15px;border-radius:11px;white-space:nowrap;box-shadow:0 4px 10px rgba(106,90,205,.34)`)}>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpenProduct(item, item.cta);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                onOpenProduct(item, item.cta);
+              }
+            }}
+            style={s(`background:${brand};color:#fff;font:700 12px 'Fredoka';padding:8px 15px;border-radius:11px;white-space:nowrap;box-shadow:0 4px 10px rgba(106,90,205,.34);cursor:pointer`)}
+          >
             {item.cta}
           </div>
         </div>
@@ -109,7 +135,7 @@ function BottomNav() {
   );
 }
 
-export default function MonoMarket() {
+export default function MonoMarket({ onOpenProduct = () => {} }) {
   const [feed, setFeed] = useState(() => makeMarketFeed(0, MARKET_PAGE_SIZE));
   const [selectedCategory, setSelectedCategory] = useState('For you');
   const feedEndRef = useRef(null);
@@ -229,7 +255,7 @@ export default function MonoMarket() {
         </div>
 
         <div style={s("display:flex;flex-direction:column;gap:10px;padding:0 13px 100px")}>
-          {feed.map((item) => <ListingCard key={item.id} item={item} />)}
+          {feed.map((item) => <ListingCard key={item.id} item={item} onOpenProduct={onOpenProduct} />)}
           <div ref={feedEndRef} style={s("display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 0 6px")}>
             {hasMore && <div style={s(`width:28px;height:28px;border-radius:50%;border:3px solid ${line};border-top-color:${ink};animation:yspin .8s linear infinite`)} />}
             <span style={s(`font:700 11px 'Nunito';color:${muted}`)}>{hasMore ? 'Finding more finds...' : 'All finds loaded'}</span>
