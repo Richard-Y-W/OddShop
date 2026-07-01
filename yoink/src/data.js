@@ -35,6 +35,116 @@ export const bazaarItems = [
 
 export const chips = ['Y2K', 'Retro', 'Oddities', 'Plushies', 'Stickers', 'Tech'];
 
+export const marketCats = ['Deals', 'Ending soon', 'Trading cards', 'Retro tech', 'Vintage', 'Plushies'];
+
+export const MARKET_PAGE_SIZE = 8;
+export const MARKET_MAX_ITEMS = 240;
+
+export function makeMarketFeed(start, count) {
+  const tints = [
+    ['#F0EEF8', '#E6E3F2'],
+    ['#F2F0F9', '#E9E6F4'],
+    ['#ECE9F5', '#E0DCEE'],
+    ['#F4F2FA', '#EBE8F4'],
+    ['#EEEBF6', '#E2DEEF'],
+    ['#E8E5F2', '#DBD6EA'],
+  ];
+  const names = [
+    'Vintage Polaroid SX-70 — tested',
+    'Holo Charizard 1st Ed · PSA 8',
+    'Y2K Bedazzled Flip Phone (works)',
+    'Rubber Duck Army — 50-pc lot',
+    'Lava Lamp · Galaxy Edition',
+    'Pixel Mini Console + 200 games',
+    'Sanrio Gachapon Mystery Lot',
+    'Translucent iMac G3 (works)',
+    'Beanie Baby — rare tag error',
+    'Tamagotchi Angel 1997',
+    'Sticker Bomb Pack · 200 pc',
+    'Brass Pocket Kaleidoscope',
+    'Cassette Walkman + 12 tapes',
+    'Holographic Pog Slammer Set',
+    'Glass Marble Jar · 80 pc',
+    'Enamel Pin Grab Bag',
+  ];
+  const imgs = [
+    'polaroid sx-70',
+    'graded slab',
+    'flip phone',
+    'duck lot',
+    'lava lamp',
+    'mini console',
+    'gacha lot',
+    'imac g3',
+    'beanie baby',
+    'tamagotchi',
+    'sticker pack',
+    'kaleidoscope',
+    'walkman',
+    'pog set',
+    'marble jar',
+    'pin bag',
+  ];
+  const sellers = [
+    'retro_optics',
+    'cardvault',
+    'y2k_dreams',
+    'odd.goods',
+    'glowco',
+    '8bit_lab',
+    'tokyo_finds',
+    'vault77',
+    'nostalgia.co',
+    'pixelpawn',
+  ];
+  const conds = ['New', 'Used · Good', 'Used · Fair', 'Refurbished', 'Graded'];
+  const modes = ['bin', 'auction', 'offer', 'bin', 'auction', 'bin'];
+  const prices = [120, 18400, 4800, 340, 520, 2900, 260, 1500, 90, 210, 75, 640, 430, 180, 120, 55];
+  const out = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const k = start + i;
+    const mode = modes[k % modes.length];
+    const isAuction = mode === 'auction';
+    const isOffer = mode === 'offer';
+    const isBin = mode === 'bin';
+    const urgent = isAuction && k % 4 === 1;
+    const shipFree = k % 3 !== 1;
+
+    out.push({
+      id: `f${k}`,
+      name: names[k % names.length],
+      img: imgs[k % imgs.length],
+      cond: conds[k % conds.length],
+      mode,
+      isAuction,
+      isOffer,
+      isBin,
+      urgent,
+      calm: isAuction && !urgent,
+      cta: isAuction ? 'Bid' : isOffer ? 'Offer' : 'Buy',
+      bids: String(3 + (k % 28)),
+      timeLeft: urgent ? `${8 + (k % 50)}m` : `${1 + (k % 6)}d ${k % 23}h`,
+      price: (prices[k % prices.length] + (k % 7) * 15).toLocaleString(),
+      shipFree,
+      paidShip: !shipFree,
+      ship: `+${40 + (k % 6) * 10} ship`,
+      seller: sellers[k % sellers.length],
+      fb: `${97 + (k % 3)}.${k % 10}%`,
+      topRated: k % 5 === 0,
+      stripe: stripe(tints[k % tints.length][0], tints[k % tints.length][1]),
+    });
+  }
+
+  return out;
+}
+
+export function appendMarketFeed(current, pageSize = MARKET_PAGE_SIZE, maxItems = MARKET_MAX_ITEMS) {
+  if (current.length >= maxItems) return current;
+  const nextCount = Math.min(pageSize, maxItems - current.length);
+  return current.concat(makeMarketFeed(current.length, nextCount));
+}
+
 export const dropItems = [
   mk({ id: 1, name: 'Crystal Boba Keychain',    img: 'boba charm',   hue: 'purple', price: '480',   left: 8,  total: 40 }),
   mk({ id: 2, name: 'Holo Trading Card · Foil', img: 'foil card',    hue: 'pink',   price: '1,250', left: 23, total: 60 }),

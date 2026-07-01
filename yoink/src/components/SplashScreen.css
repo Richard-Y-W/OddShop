@@ -1,0 +1,442 @@
+.yoink-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+  background: #fff;
+  animation: yoinkSplashOverlay calc(var(--yoink-duration) + 260ms) linear both;
+}
+
+.yoink-splash__shadow {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: calc(50% + 54px);
+  width: 176px;
+  height: 15px;
+  border-radius: 999px;
+  background: rgba(106, 90, 205, .13);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(.55);
+  animation: yoinkSplashShadow var(--yoink-duration) linear both;
+}
+
+.yoink-splash__rig {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  width: min(460px, 92vw);
+  height: 235px;
+  transform: translate3d(-50%, -50%, 0);
+  transform-origin: 52% 42%;
+  animation: yoinkSplashRig var(--yoink-duration) linear both;
+}
+
+.yoink-splash__logo {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 135px;
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--yoink-brand);
+  font: 700 86px/1 Fredoka, Nunito, sans-serif;
+  letter-spacing: .01em;
+  transform: translate3d(-50%, -50%, 0);
+  transform-origin: 50% 52%;
+  white-space: nowrap;
+  will-change: transform, opacity;
+  animation: yoinkSplashLogo var(--yoink-duration) linear both;
+}
+
+.yoink-splash__word,
+.yoink-splash__bang {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.yoink-splash__word {
+  animation: yoinkSplashWord var(--yoink-duration) linear both;
+}
+
+.yoink-splash__bang {
+  margin-left: 1px;
+  transform-origin: 50% 85%;
+  animation: yoinkSplashBang var(--yoink-duration) linear both;
+}
+
+.yoink-splash__cover {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  top: 136px;
+  width: 268px;
+  height: 104px;
+  border-radius: 54px;
+  background: #fff;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.78, .45);
+  animation: yoinkSplashCover var(--yoink-duration) linear both;
+}
+
+.yoink-splash__hand {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  top: 0;
+  width: 204px;
+  height: 198px;
+  opacity: 0;
+  transform: translate3d(-50%, -238px, 0) rotate(-5deg) scale(.94);
+  transform-origin: 50% 20%;
+  animation: yoinkSplashHand var(--yoink-duration) linear both;
+}
+
+.yoink-splash__wrist {
+  position: absolute;
+  left: 80px;
+  top: -56px;
+  width: 50px;
+  height: 84px;
+  border-radius: 0 0 24px 24px;
+  background: var(--yoink-brand);
+}
+
+.yoink-splash__open-hand,
+.yoink-splash__closed-hand {
+  position: absolute;
+  inset: 0;
+}
+
+.yoink-splash__open-hand {
+  animation: yoinkSplashOpenHand var(--yoink-duration) linear both;
+}
+
+.yoink-splash__open-palm {
+  position: absolute;
+  left: 42px;
+  top: 5px;
+  width: 120px;
+  height: 92px;
+  border-radius: 46px 46px 34px 34px;
+  background: var(--yoink-brand);
+}
+
+.yoink-splash__open-fingers {
+  position: absolute;
+  left: 33px;
+  top: 66px;
+  width: 139px;
+  height: 96px;
+  border-radius: 38px 38px 50px 50px;
+  background:
+    radial-gradient(circle at 14% 16%, var(--yoink-brand) 0 21px, transparent 22px),
+    radial-gradient(circle at 38% 6%, var(--yoink-brand) 0 24px, transparent 25px),
+    radial-gradient(circle at 62% 6%, var(--yoink-brand) 0 24px, transparent 25px),
+    radial-gradient(circle at 86% 16%, var(--yoink-brand) 0 21px, transparent 22px),
+    var(--yoink-brand);
+  transform-origin: 50% 0;
+  animation: yoinkSplashOpenFingers var(--yoink-duration) linear both;
+}
+
+.yoink-splash__open-thumb {
+  position: absolute;
+  left: 21px;
+  top: 86px;
+  width: 78px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--yoink-brand);
+  transform: rotate(36deg);
+  transform-origin: 88% 50%;
+  animation: yoinkSplashOpenThumb var(--yoink-duration) linear both;
+}
+
+.yoink-splash__closed-hand {
+  opacity: 0;
+  transform: scale(.9) translateY(12px);
+  transform-origin: 50% 62%;
+  animation: yoinkSplashClosedHand var(--yoink-duration) linear both;
+}
+
+.yoink-splash__fist {
+  position: absolute;
+  left: 30px;
+  top: 58px;
+  width: 146px;
+  height: 94px;
+  border-radius: 44px 44px 40px 40px;
+  background:
+    radial-gradient(circle at 21% 8%, var(--yoink-brand) 0 28px, transparent 29px),
+    radial-gradient(circle at 43% 0%, var(--yoink-brand) 0 31px, transparent 32px),
+    radial-gradient(circle at 65% 1%, var(--yoink-brand) 0 30px, transparent 31px),
+    radial-gradient(circle at 86% 12%, var(--yoink-brand) 0 25px, transparent 26px),
+    var(--yoink-brand);
+}
+
+.yoink-splash__fist-thumb {
+  position: absolute;
+  left: 31px;
+  top: 107px;
+  width: 116px;
+  height: 31px;
+  border-radius: 999px;
+  background: var(--yoink-brand);
+  transform: rotate(-10deg);
+}
+
+.yoink-splash__fist-highlight {
+  position: absolute;
+  left: 95px;
+  top: 75px;
+  width: 48px;
+  height: 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .34);
+  opacity: .72;
+  transform: rotate(-3deg);
+}
+
+@keyframes yoinkSplashOverlay {
+  0%, 88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes yoinkSplashLogo {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, calc(-50% + 10px), 0) scale(.96);
+  }
+  9% {
+    opacity: 1;
+    transform: translate3d(-50%, calc(-50% - 1px), 0) scale(1.018);
+  }
+  17%, 55% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(-50%, calc(-50% + 3px), 0) scale(1.035, .93);
+  }
+  65% {
+    opacity: 1;
+    transform: translate3d(-50%, calc(-50% - 2px), 0) scale(.97, 1.03) rotate(-.8deg);
+  }
+  70%, 100% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(.985) rotate(-1deg);
+  }
+}
+
+@keyframes yoinkSplashWord {
+  0%, 55% {
+    letter-spacing: .01em;
+    transform: translateX(0);
+  }
+  61% {
+    letter-spacing: -.018em;
+    transform: translateX(-2px) scaleX(.98);
+  }
+  68%, 100% {
+    letter-spacing: -.045em;
+    transform: translateX(-4px) scaleX(.95);
+  }
+}
+
+@keyframes yoinkSplashBang {
+  0%, 12% {
+    opacity: 0;
+    transform: translate3d(7px, -56px, 0) rotate(-10deg) scale(.82);
+  }
+  18% {
+    opacity: 1;
+    transform: translate3d(4px, -14px, 0) rotate(-4deg) scale(.94, 1.08);
+  }
+  24% {
+    opacity: 1;
+    transform: translate3d(1px, 7px, 0) rotate(4deg) scale(1.12, .9);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) rotate(-1deg) scale(.98, 1.03);
+  }
+  36%, 57% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(-3px, 2px, 0) rotate(3deg) scale(1.08, .9);
+  }
+  70%, 100% {
+    opacity: 1;
+    transform: translate3d(-4px, 0, 0) rotate(-1deg) scale(.96, 1.02);
+  }
+}
+
+@keyframes yoinkSplashHand {
+  0%, 42% {
+    opacity: 0;
+    transform: translate3d(-50%, -238px, 0) rotate(-5deg) scale(.94);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(-50%, -104px, 0) rotate(2deg) scale(1.018);
+  }
+  56% {
+    opacity: 1;
+    transform: translate3d(-50%, -38px, 0) rotate(-1deg) scale(1);
+  }
+  61% {
+    opacity: 1;
+    transform: translate3d(-50%, -23px, 0) rotate(.6deg) scale(1.012, .99);
+  }
+  68%, 100% {
+    opacity: 1;
+    transform: translate3d(-50%, -27px, 0) rotate(-2deg) scale(.99);
+  }
+}
+
+@keyframes yoinkSplashOpenHand {
+  0%, 55% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  61% {
+    opacity: .88;
+    transform: translateY(8px) scale(1.02, .94);
+  }
+  65%, 100% {
+    opacity: 0;
+    transform: translateY(18px) scale(.9, .78);
+  }
+}
+
+@keyframes yoinkSplashOpenFingers {
+  0%, 55% {
+    transform: scale(1, 1);
+  }
+  61% {
+    transform: scale(1.06, .72) translateY(15px);
+  }
+  65%, 100% {
+    transform: scale(.88, .52) translateY(26px);
+  }
+}
+
+@keyframes yoinkSplashOpenThumb {
+  0%, 55% {
+    transform: rotate(36deg) translate3d(0, 0, 0);
+  }
+  61% {
+    transform: rotate(17deg) translate3d(18px, 15px, 0);
+  }
+  65%, 100% {
+    transform: rotate(7deg) translate3d(26px, 20px, 0);
+  }
+}
+
+@keyframes yoinkSplashClosedHand {
+  0%, 57% {
+    opacity: 0;
+    transform: scale(.86) translateY(18px) rotate(0);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.04, .96) translateY(5px) rotate(-1deg);
+  }
+  68%, 100% {
+    opacity: 1;
+    transform: scale(1) translateY(3px) rotate(-2deg);
+  }
+}
+
+@keyframes yoinkSplashCover {
+  0%, 58% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.78, .45);
+  }
+  62% {
+    opacity: .98;
+    transform: translate(-50%, -50%) scale(1, .78);
+  }
+  68%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(.96, .82);
+  }
+}
+
+@keyframes yoinkSplashRig {
+  0%, 62% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) rotate(0) scale(1);
+  }
+  66% {
+    opacity: 1;
+    transform: translate3d(-50%, -56%, 0) rotate(-1deg) scale(1.006, .992);
+  }
+  73% {
+    opacity: 1;
+    transform: translate3d(-53%, -128%, 0) rotate(-6deg) scale(.78);
+  }
+  84% {
+    opacity: .75;
+    transform: translate3d(-58%, -216%, 0) rotate(-10deg) scale(.48);
+  }
+  93%, 100% {
+    opacity: 0;
+    transform: translate3d(-60%, -276%, 0) rotate(-12deg) scale(.26);
+  }
+}
+
+@keyframes yoinkSplashShadow {
+  0%, 8% {
+    opacity: 0;
+    transform: translateX(-50%) scaleX(.55);
+  }
+  18% {
+    opacity: .34;
+    transform: translateX(-50%) scaleX(.82);
+  }
+  36%, 58% {
+    opacity: .24;
+    transform: translateX(-50%) scaleX(1);
+  }
+  68% {
+    opacity: .16;
+    transform: translateX(-50%) translateY(-34px) scaleX(.72);
+  }
+  82%, 100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-118px) scaleX(.24);
+  }
+}
+
+@media (max-width: 520px) {
+  .yoink-splash__logo {
+    font-size: 64px;
+  }
+
+  .yoink-splash__hand {
+    width: 176px;
+    height: 176px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yoink-splash,
+  .yoink-splash *,
+  .yoink-splash *::before,
+  .yoink-splash *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}

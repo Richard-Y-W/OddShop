@@ -1,0 +1,243 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { s } from '../style.js';
+import { appendMarketFeed, makeMarketFeed, MARKET_MAX_ITEMS, MARKET_PAGE_SIZE, marketCats } from '../data.js';
+import { marketTheme } from '../marketTheme.js';
+
+const {
+  ink,
+  wash,
+  line,
+  muted,
+  brand,
+  activeChipBackground,
+  currencyButtonBackground,
+  cartCountBackground,
+  attentionBadgeBackground,
+  attentionBadgeText,
+} = marketTheme;
+
+function ListingCard({ item }) {
+  return (
+    <div style={s("position:relative;display:flex;gap:11px;background:#fff;border:1px solid #EDEAF6;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(23,19,38,.05)")}>
+      <div style={s(`position:relative;width:96px;height:96px;flex:none;border-radius:10px;overflow:hidden;background:${item.stripe}`)}>
+        <div style={s("position:absolute;bottom:4px;left:4px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.85);font:600 8px ui-monospace,Menlo,monospace;color:#6E6A7A;white-space:nowrap")}>
+          {item.img}
+        </div>
+      </div>
+      <div style={s("flex:1;min-width:0;display:flex;flex-direction:column")}>
+        <div style={s(`font:700 13px/1.28 'Nunito';color:${ink};max-height:34px;overflow:hidden;padding-right:22px`)}>
+          {item.name}
+        </div>
+        <div style={s("display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:5px 0 6px")}>
+          <span style={s(`font:700 9.5px 'Nunito';color:${ink};background:${wash};padding:2px 7px;border-radius:6px`)}>
+            {item.cond}
+          </span>
+          {item.topRated && (
+            <span style={s(`display:inline-flex;align-items:center;gap:2px;font:700 9.5px 'Nunito';color:${attentionBadgeText};background:${attentionBadgeBackground};padding:2px 7px 2px 5px;border-radius:6px`)}>
+              <span className="mi" style={s("font-size:11px;font-variation-settings:'FILL' 1")}>star</span>
+              Top Rated
+            </span>
+          )}
+          {item.isBin && <span style={s("font:700 10.5px 'Nunito';color:#7A7686")}>Buy It Now</span>}
+          {item.isOffer && <span style={s("font:700 10.5px 'Nunito';color:#7A7686")}>or Best Offer</span>}
+          {item.calm && (
+            <span style={s(`font:700 10.5px 'Nunito';color:${attentionBadgeText};background:${attentionBadgeBackground};padding:1px 6px;border-radius:5px`)}>
+              {item.bids} Bids &middot; {item.timeLeft} left
+            </span>
+          )}
+          {item.urgent && (
+            <span style={s(`font:700 10.5px 'Nunito';color:${attentionBadgeText};background:${attentionBadgeBackground};padding:1px 6px;border-radius:5px`)}>
+              {item.bids} Bids &middot; ends {item.timeLeft}
+            </span>
+          )}
+        </div>
+        <div style={s("display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto")}>
+          <div style={s("min-width:0")}>
+            <div style={s("display:flex;align-items:center;gap:4px")}>
+              <span style={s(`width:17px;height:17px;border-radius:50%;background:${ink};display:inline-flex;align-items:center;justify-content:center;font:700 9px 'Fredoka';color:#fff;flex:none`)}>
+                Y
+              </span>
+              <span style={s(`font:700 17px 'Fredoka';color:${ink}`)}>{item.price}</span>
+            </div>
+            <div style={s("display:flex;align-items:center;gap:5px;margin-top:3px;font:600 10px 'Nunito';color:#8C8A99")}>
+              {item.shipFree && <span style={s(`color:${ink};font-weight:700`)}>Free shipping</span>}
+              {item.paidShip && <span>{item.ship}</span>}
+              <span>&middot; {item.seller} {item.fb}</span>
+            </div>
+          </div>
+          <div style={s(`background:${brand};color:#fff;font:700 12px 'Fredoka';padding:8px 15px;border-radius:11px;white-space:nowrap;box-shadow:0 4px 10px rgba(106,90,205,.34)`)}>
+            {item.cta}
+          </div>
+        </div>
+      </div>
+      <div style={s(`position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;background:${wash};display:flex;align-items:center;justify-content:center`)}>
+        <span className="mi" style={s("font-size:15px;color:#7A7686")}>favorite</span>
+      </div>
+    </div>
+  );
+}
+
+function BottomNav() {
+  const items = [
+    ['home', 'Home', true],
+    ['search', 'Search', false],
+    ['bookmark', 'Watching', false],
+    ['person', 'Account', false],
+  ];
+
+  return (
+    <div style={s("position:sticky;bottom:0;z-index:30;background:#fff;box-shadow:0 -3px 16px rgba(23,19,38,.07);padding:9px 14px 22px;display:flex;align-items:flex-end;justify-content:space-between")}>
+      {items.slice(0, 2).map(([icon, label, active]) => (
+        <div key={label} style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}>
+          <span className="mi" style={s(`font-size:24px;color:${active ? ink : '#AFADBA'};${active ? "font-variation-settings:'FILL' 1" : ''}`)}>{icon}</span>
+          <span style={s(`font:${active ? '700' : '600'} 10px 'Fredoka';color:${active ? ink : '#AFADBA'}`)}>{label}</span>
+        </div>
+      ))}
+      <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:5px")}>
+        <div style={s(`margin-top:-26px;width:58px;height:58px;border-radius:18px;background:${ink};box-shadow:0 7px 16px rgba(23,19,38,.4),0 0 0 4px #fff;display:flex;align-items:center;justify-content:center`)}>
+          <span className="mi" style={s("font-size:30px;color:#fff")}>add</span>
+        </div>
+        <span style={s(`font:700 10px 'Fredoka';color:${ink};margin-top:-2px`)}>Sell</span>
+      </div>
+      {items.slice(2).map(([icon, label]) => (
+        <div key={label} style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}>
+          <span className="mi" style={s("font-size:24px;color:#AFADBA")}>{icon}</span>
+          <span style={s("font:600 10px 'Fredoka';color:#AFADBA")}>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function MonoMarket() {
+  const [feed, setFeed] = useState(() => makeMarketFeed(0, MARKET_PAGE_SIZE));
+  const [selectedCategory, setSelectedCategory] = useState('For you');
+  const feedEndRef = useRef(null);
+  const lastLoadRef = useRef(0);
+  const hasMore = feed.length < MARKET_MAX_ITEMS;
+
+  const loadMore = useCallback(() => {
+    const now = Date.now();
+    if (now - lastLoadRef.current < 200) return;
+    lastLoadRef.current = now;
+    setFeed((current) => appendMarketFeed(current));
+  }, []);
+
+  const categoryChips = useMemo(() => marketCats, []);
+
+  useEffect(() => {
+    let tries = 0;
+    let scrollContainer;
+    let timer;
+
+    const arm = () => {
+      let node = feedEndRef.current?.parentElement ?? null;
+      while (node) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (overflowY === 'auto' || overflowY === 'scroll') break;
+        node = node.parentElement;
+      }
+
+      if (!node) {
+        if (tries < 60) {
+          tries += 1;
+          timer = window.setTimeout(arm, 100);
+        }
+        return;
+      }
+
+      scrollContainer = node;
+      const onScroll = () => {
+        if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 380) {
+          loadMore();
+        }
+      };
+
+      scrollContainer.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      timer = () => scrollContainer.removeEventListener('scroll', onScroll);
+    };
+
+    arm();
+
+    return () => {
+      if (typeof timer === 'number') window.clearTimeout(timer);
+      if (typeof timer === 'function') timer();
+    };
+  }, [loadMore]);
+
+  return (
+    <div style={s(`min-height:100%;background:${wash};display:flex;flex-direction:column;font-family:'Nunito',sans-serif;color:${ink}`)}>
+      <div style={s("position:sticky;top:0;z-index:30;background:#FFFFFF;padding:47px 13px 11px;box-shadow:0 3px 14px rgba(23,19,38,.06)")}>
+        <div style={s("display:flex;align-items:center;justify-content:space-between;margin-bottom:10px")}>
+          <div style={s(`font:700 23px 'Fredoka';color:${brand};letter-spacing:.2px`)}>Yoink!</div>
+          <div style={s("display:flex;align-items:center;gap:7px")}>
+            <div style={s(`display:flex;align-items:center;gap:5px;background:${currencyButtonBackground};border:1.5px solid ${currencyButtonBackground};border-radius:999px;padding:4px 10px 4px 5px`)}>
+              <span style={s(`width:16px;height:16px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 9px 'Fredoka';color:${currencyButtonBackground};flex:none`)}>Y</span>
+              <span style={s("font:700 12px 'Fredoka';color:#fff")}>2,480</span>
+            </div>
+            <div style={s(`position:relative;width:36px;height:36px;border-radius:11px;background:${wash};display:flex;align-items:center;justify-content:center`)}>
+              <span className="mi" style={s(`font-size:21px;color:${ink}`)}>shopping_cart</span>
+              <span style={s(`position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:${cartCountBackground};color:#fff;font:700 9.5px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff`)}>
+                2
+              </span>
+            </div>
+          </div>
+        </div>
+        <div style={s(`display:flex;align-items:center;background:${wash};border:1.5px solid ${line};border-radius:12px;overflow:hidden;height:44px`)}>
+          <div style={s(`display:flex;align-items:center;gap:2px;padding:0 11px;height:100%;border-right:1.5px solid ${line}`)}>
+            <span style={s(`font:700 12.5px 'Nunito';color:${ink}`)}>All</span>
+            <span className="mi" style={s(`font-size:16px;color:${muted}`)}>expand_more</span>
+          </div>
+          <div style={s("flex:1;display:flex;align-items:center;padding:0 11px")}>
+            <span style={s(`font:600 13px 'Nunito';color:${muted}`)}>Search 2M listings...</span>
+          </div>
+          <div style={s(`width:48px;height:100%;background:${ink};display:flex;align-items:center;justify-content:center`)}>
+            <span className="mi" style={s("font-size:22px;color:#fff")}>search</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={s("flex:1;display:flex;flex-direction:column")}>
+        <div className="ynoscroll" style={s("display:flex;gap:7px;overflow-x:auto;padding:12px 13px 4px")}>
+          <button
+            type="button"
+            onClick={() => setSelectedCategory('For you')}
+            style={s(`border:0;flex:none;padding:7px 13px;border-radius:9px;background:${selectedCategory === 'For you' ? activeChipBackground : '#fff'};font:700 12.5px 'Nunito';color:${selectedCategory === 'For you' ? '#fff' : '#3A3A42'};white-space:nowrap;cursor:pointer`)}
+          >
+            For you
+          </button>
+          {categoryChips.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              style={s(`border:${selectedCategory === cat ? '0' : `1.5px solid ${line}`};flex:none;padding:${selectedCategory === cat ? '8.5px 14.5px' : '7px 13px'};border-radius:9px;background:${selectedCategory === cat ? activeChipBackground : '#fff'};font:700 12.5px 'Nunito';color:${selectedCategory === cat ? '#fff' : '#3A3A42'};white-space:nowrap;cursor:pointer`)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div style={s("display:flex;align-items:center;justify-content:space-between;padding:13px 13px 8px")}>
+          <div style={s(`font:700 16px 'Fredoka';color:${ink}`)}>Fresh listings</div>
+          <div style={s("display:flex;align-items:center;gap:2px")}>
+            <span style={s(`font:700 12px 'Nunito';color:${ink}`)}>Best match</span>
+            <span className="mi" style={s(`font-size:16px;color:${ink}`)}>expand_more</span>
+          </div>
+        </div>
+
+        <div style={s("display:flex;flex-direction:column;gap:10px;padding:0 13px 100px")}>
+          {feed.map((item) => <ListingCard key={item.id} item={item} />)}
+          <div ref={feedEndRef} style={s("display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 0 6px")}>
+            {hasMore && <div style={s(`width:28px;height:28px;border-radius:50%;border:3px solid ${line};border-top-color:${ink};animation:yspin .8s linear infinite`)} />}
+            <span style={s(`font:700 11px 'Nunito';color:${muted}`)}>{hasMore ? 'Finding more finds...' : 'All finds loaded'}</span>
+          </div>
+        </div>
+      </div>
+
+      <BottomNav />
+    </div>
+  );
+}
