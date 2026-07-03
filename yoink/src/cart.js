@@ -51,13 +51,26 @@ export function getCartTotal(cartItems) {
   return getCartSubtotal(cartItems) + getCartShipping(cartItems);
 }
 
-export function getCheckoutTotals(cartItems, { shippingPrice } = {}) {
+// Fake promo codes — the whole store runs on play money, so the discounts
+// are part of the toy. Shared by checkout display and the server.
+export const PROMO_CODES = {
+  YOINK10: 0.1,
+  MOCHI: 0.05,
+};
+
+export function getPromoRate(code) {
+  return PROMO_CODES[String(code ?? '').trim().toUpperCase()] ?? 0;
+}
+
+export function getCheckoutTotals(cartItems, { shippingPrice, promoCode } = {}) {
   const subtotal = getCartSubtotal(cartItems);
   const shipping = cartItems.length > 0 ? Number(shippingPrice ?? getCartShipping(cartItems)) : 0;
+  const discount = Math.round(subtotal * getPromoRate(promoCode) * 100) / 100;
 
   return {
     subtotal,
     shipping,
-    total: subtotal + shipping,
+    discount,
+    total: subtotal + shipping - discount,
   };
 }

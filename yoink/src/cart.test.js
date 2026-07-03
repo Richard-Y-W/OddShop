@@ -62,11 +62,29 @@ test('checkout totals can use the selected shipping option from checkout', async
   assert.deepEqual(standardTotals, {
     subtotal: 120,
     shipping: 3,
+    discount: 0,
     total: 123,
   });
   assert.deepEqual(rushTotals, {
     subtotal: 120,
     shipping: 6.5,
+    discount: 0,
     total: 126.5,
   });
+});
+
+test('promo codes discount the subtotal and ignore junk codes', async () => {
+  const { addListingToCart, getCheckoutTotals, getPromoRate } = await import(cartUrl);
+
+  const cart = addListingToCart([], polaroid);
+  const promoTotals = getCheckoutTotals(cart, { shippingPrice: 3, promoCode: 'yoink10' });
+
+  assert.deepEqual(promoTotals, {
+    subtotal: 120,
+    shipping: 3,
+    discount: 12,
+    total: 111,
+  });
+  assert.equal(getPromoRate('NOTACODE'), 0);
+  assert.equal(getCheckoutTotals(cart, { promoCode: 'NOTACODE' }).discount, 0);
 });

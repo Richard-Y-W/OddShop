@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatMoney, getCartQuantity, getCheckoutTotals } from '../cart.js';
+import { formatMoney, getCartQuantity, getCheckoutTotals, getPromoRate } from '../cart.js';
 import { marketTheme } from '../marketTheme.js';
 import { s } from '../style.js';
 
@@ -199,12 +199,26 @@ export default function Checkout({ cartItems = [], balance = 0, onBack = () => {
   const [selectedPayment, setSelectedPayment] = useState('visa');
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState(null);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoInput, setPromoInput] = useState('');
+  const [promoCode, setPromoCode] = useState(null);
+  const [promoError, setPromoError] = useState(false);
+
+  const applyPromo = () => {
+    if (getPromoRate(promoInput) > 0) {
+      setPromoCode(promoInput.trim().toUpperCase());
+      setPromoError(false);
+      setPromoOpen(false);
+    } else {
+      setPromoError(true);
+    }
+  };
 
   const address = getSelectedOption(checkoutOptions.address, selectedAddress);
   const shippingChoice = getSelectedOption(checkoutOptions.shipping, selectedShipping);
   const plan = getSelectedOption(checkoutOptions.plan, selectedPlan);
   const payment = getSelectedOption(checkoutOptions.payment, selectedPayment);
-  const { subtotal, shipping, total } = getCheckoutTotals(cartItems, { shippingPrice: shippingChoice.price });
+  const { subtotal, shipping, discount, total } = getCheckoutTotals(cartItems, { shippingPrice: shippingChoice.price, promoCode });
   const itemCount = getCartQuantity(cartItems);
   const itemLabel = itemCount === 1 ? '1 item' : `${itemCount} items`;
   const toggleRow = (rowId) => {
@@ -218,6 +232,7 @@ export default function Checkout({ cartItems = [], balance = 0, onBack = () => {
     try {
       const result = await onPlaceOrder({
         shippingPrice: shippingChoice.price,
+        promoCode,
         shippingLabel: shippingChoice.optionLabel,
         addressLabel: address.title,
         paymentLabel: payment.title,
@@ -304,13 +319,47 @@ export default function Checkout({ cartItems = [], balance = 0, onBack = () => {
           />
         </div>
 
-        <button
-          type="button"
-          style={s(`display:inline-flex;align-items:center;gap:7px;margin-top:22px;background:#fff;border:1.5px solid #DDD8E8;border-radius:999px;padding:10px 14px;color:${ink};font:900 13px 'Nunito';cursor:pointer`)}
-        >
-          <span className="mi" style={s("font-size:18px")}>sell</span>
-          Add discount
-        </button>
+        {promoCode ? (
+          <div style={s(`display:inline-flex;align-items:center;gap:7px;margin-top:22px;background:#DFF8F1;border:1.5px solid #9BE8D6;border-radius:999px;padding:10px 14px;color:#0B8576;font:900 13px 'Nunito';animation:ypop .35s ease both`)}>
+            <span className="mi" style={s("font-size:18px;font-variation-settings:'FILL' 1")}>sell</span>
+            {promoCode} applied — {formatMoney(discount)} off
+            <button
+              type="button"
+              aria-label="Remove discount"
+              onClick={() => { setPromoCode(null); setPromoInput(''); }}
+              style={s("border:0;background:transparent;padding:0;display:inline-flex;cursor:pointer;color:#0B8576")}
+            >
+              <span className="mi" style={s("font-size:17px")}>close</span>
+            </button>
+          </div>
+        ) : promoOpen ? (
+          <div style={s("display:flex;align-items:center;gap:8px;margin-top:22px")}>
+            <input
+              autoFocus
+              value={promoInput}
+              onChange={(event) => { setPromoInput(event.target.value); setPromoError(false); }}
+              onKeyDown={(event) => { if (event.key === 'Enter') applyPromo(); }}
+              placeholder="Try YOINK10"
+              style={s(`flex:1;height:44px;border:1.5px solid ${promoError ? '#FF6B3D' : '#DDD8E8'};border-radius:999px;padding:0 16px;font:800 13px 'Nunito';color:${ink};outline:none;background:${promoError ? '#FFF3EE' : '#fff'}`)}
+            />
+            <button
+              type="button"
+              onClick={applyPromo}
+              style={s(`border:0;height:44px;padding:0 18px;border-radius:999px;background:${ink};color:#fff;font:900 13px 'Fredoka';cursor:pointer`)}
+            >
+              Apply
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPromoOpen(true)}
+            style={s(`display:inline-flex;align-items:center;gap:7px;margin-top:22px;background:#fff;border:1.5px solid #DDD8E8;border-radius:999px;padding:10px 14px;color:${ink};font:900 13px 'Nunito';cursor:pointer`)}
+          >
+            <span className="mi" style={s("font-size:18px")}>sell</span>
+            Add discount
+          </button>
+        )}
 
         <div style={s("margin-top:22px")}>
           <CartSummary cartItems={cartItems} itemLabel={itemLabel} />
@@ -329,6 +378,12 @@ export default function Checkout({ cartItems = [], balance = 0, onBack = () => {
             <span>Shipping</span>
             <span>{formatMoney(shipping)}</span>
           </div>
+          {discount > 0 && (
+            <div style={s("display:flex;justify-content:space-between;font:800 13px 'Nunito';color:#0B8576")}>
+              <span>Discount &middot; {promoCode}</span>
+              <span>-{formatMoney(discount)}</span>
+            </div>
+          )}
           <div style={s(`display:flex;justify-content:space-between;align-items:center;margin-top:5px;font:900 19px 'Fredoka';color:${ink}`)}>
             <span>Total</span>
             <span>{formatMoney(total)}</span>

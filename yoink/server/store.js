@@ -154,7 +154,7 @@ export function createStore({ file = null, state = null, random = Math.random } 
     };
   };
 
-  const placeOrder = ({ items = [], shippingPrice, shippingLabel = 'Yoink Standard', addressLabel = 'Home', paymentLabel = 'Yoink Wallet' } = {}, now = Date.now()) => {
+  const placeOrder = ({ items = [], shippingPrice, promoCode = null, shippingLabel = 'Yoink Standard', addressLabel = 'Home', paymentLabel = 'Yoink Wallet' } = {}, now = Date.now()) => {
     if (!Array.isArray(items) || items.length === 0) {
       return { ok: false, error: 'Your cart is empty' };
     }
@@ -167,7 +167,7 @@ export function createStore({ file = null, state = null, random = Math.random } 
       unitPrice: Number(item.unitPrice) || 0,
       quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
     }));
-    const totals = getCheckoutTotals(cleanItems, { shippingPrice });
+    const totals = getCheckoutTotals(cleanItems, { shippingPrice, promoCode });
     if (totals.total > data.wallet.balance) {
       return {
         ok: false,
@@ -183,6 +183,8 @@ export function createStore({ file = null, state = null, random = Math.random } 
       items: cleanItems,
       subtotal: totals.subtotal,
       shipping: totals.shipping,
+      discount: totals.discount,
+      promoCode: totals.discount > 0 ? String(promoCode).trim().toUpperCase() : null,
       total: totals.total,
       shippingLabel,
       addressLabel,

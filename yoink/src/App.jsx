@@ -40,6 +40,12 @@ export default function App() {
   const [wallet, setWallet] = useState({ balance: 0, streak: 0, canClaim: false, canSpin: false });
   const [yoinkedOrder, setYoinkedOrder] = useState(null);
   const [ordersInFlight, setOrdersInFlight] = useState(0);
+  const [sellToast, setSellToast] = useState(false);
+
+  const handleSell = useCallback(() => {
+    setSellToast(true);
+    window.setTimeout(() => setSellToast(false), 2200);
+  }, []);
 
   const refreshWallet = useCallback(() => {
     fetchWallet().then((next) => {
@@ -112,7 +118,15 @@ export default function App() {
         ) : flow.screen === APP_SCREENS.drops ? (
           <Drops balance={wallet.balance} streak={wallet.streak} canSpin={wallet.canSpin} onWallet={setWallet} />
         ) : flow.screen === APP_SCREENS.pocket ? (
-          <Pocket balance={wallet.balance} streak={wallet.streak} canClaim={wallet.canClaim} onWallet={setWallet} />
+          <Pocket
+            balance={wallet.balance}
+            streak={wallet.streak}
+            canClaim={wallet.canClaim}
+            onWallet={setWallet}
+            cartCount={cartCount}
+            onAddToCart={addToCart}
+            onOpenCart={handleOpenCart}
+          />
         ) : flow.screen === APP_SCREENS.orders ? (
           <Orders balance={wallet.balance} celebrateOrderId={flow.celebrateOrderId ?? null} />
         ) : (
@@ -123,12 +137,19 @@ export default function App() {
             balance={wallet.balance}
           />
         )}
+        {isTabScreen && sellToast && (
+          <div style={s("position:absolute;left:50%;bottom:108px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:9px;background:#171326;color:#fff;padding:10px 16px;border-radius:999px;box-shadow:0 10px 24px rgba(23,19,38,.35);font:700 12.5px 'Fredoka';white-space:nowrap;animation:ypop .35s ease both")}>
+            <span className="mi" style={s("font-size:17px;color:#FFB84D;font-variation-settings:'FILL' 1")}>storefront</span>
+            Selling opens soon — keep collecting!
+          </div>
+        )}
         {isTabScreen && (
           <YoinkNav
             tab={flow.screen}
             onSelectTab={handleSelectTab}
             accent={TAB_ACCENTS[flow.screen]}
             ordersInFlight={ordersInFlight}
+            onSell={handleSell}
           />
         )}
       </IOSDevice>

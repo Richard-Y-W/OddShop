@@ -3,10 +3,10 @@ import { marketTheme } from './marketTheme.js';
 export const splashMotion = {
   wordmark: 'Yoink!',
   brandColor: marketTheme.brand,
-  durationMs: 2160,
-  exitStyle: 'bottom-anchored-pinch-white-flash-reveal',
-  handStyle: 'generated-two-pose-bottom-pinch-glove',
-  frameBlend: 'open-to-grab-caught-logo',
+  durationMs: 1800,
+  exitStyle: 'hook-cane-side-yank-white-flash-reveal',
+  grabber: 'vaudeville-hook-cane',
+  caneRender: 'inline-svg-two-stroke',
   usesBlur: false,
   autoPlaysOnLoad: true,
 };

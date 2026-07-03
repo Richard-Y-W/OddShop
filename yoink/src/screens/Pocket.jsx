@@ -6,10 +6,17 @@ import { claimAllowance, fetchCollection } from '../api.js';
 
 const coinBadge = 'radial-gradient(circle at 35% 28%,#FFE9A8,#FFC700 62%,#E0A400)';
 
-export default function Pocket({ balance = 0, streak = 0, canClaim = false, onWallet = () => {} }) {
+export default function Pocket({ balance = 0, streak = 0, canClaim = false, onWallet = () => {}, cartCount = 0, onAddToCart = () => {}, onOpenCart = () => {} }) {
   const [collection, setCollection] = useState([]);
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(null);
+  const [justAdded, setJustAdded] = useState(null);
+
+  const handleAdd = (item) => {
+    onAddToCart(item);
+    setJustAdded(item.id);
+    window.setTimeout(() => setJustAdded((current) => (current === item.id ? null : current)), 900);
+  };
 
   useEffect(() => {
     fetchCollection().then((data) => {
@@ -46,10 +53,15 @@ export default function Pocket({ balance = 0, streak = 0, canClaim = false, onWa
             <div style={s("display:flex;align-items:center;gap:3px;background:#fff;border:1.5px solid #FFC2A8;border-radius:999px;padding:5px 9px 5px 7px")}>
               <span className="mi" style={s("font-size:17px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 13px 'Fredoka';color:#D2491F")}>{streak}</span>
             </div>
-            <div style={s("position:relative;width:38px;height:38px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center")}>
+            <button
+              type="button"
+              aria-label="Open cart"
+              onClick={onOpenCart}
+              style={s("position:relative;width:38px;height:38px;border:0;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0")}
+            >
               <span className="mi" style={s("font-size:22px;color:#1E1233")}>shopping_bag</span>
-              <span style={s("position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#10B5A0;color:#fff;font:700 10px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #EAFBF6")}>3</span>
-            </div>
+              <span style={s("position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#10B5A0;color:#fff;font:700 10px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #EAFBF6")}>{cartCount}</span>
+            </button>
           </div>
         </div>
         <div style={s("display:flex;gap:8px;align-items:center")}>
@@ -189,7 +201,14 @@ export default function Pocket({ balance = 0, streak = 0, canClaim = false, onWa
                   <span style={s(`width:17px;height:17px;border-radius:50%;background:${coinBadge};display:inline-flex;align-items:center;justify-content:center;font:700 9px 'Fredoka';color:#8A5A00;box-shadow:0 1px 0 #C98B00;flex:none`)}>Y</span>
                   <span style={s("font:700 15px 'Fredoka';color:#1E1233")}>{item.price}</span>
                 </div>
-                <div style={s("display:flex;align-items:center;gap:2px;background:#10B5A0;color:#fff;font:700 12px 'Fredoka';padding:7px 12px;border-radius:12px;box-shadow:0 4px 0 #0B8576")}><span className="mi" style={s("font-size:15px")}>add</span>Add</div>
+                <button
+                  type="button"
+                  onClick={() => handleAdd(item)}
+                  style={s(`display:flex;align-items:center;gap:2px;border:0;background:${justAdded === item.id ? '#0B8576' : '#10B5A0'};color:#fff;font:700 12px 'Fredoka';padding:7px 12px;border-radius:12px;box-shadow:0 4px 0 #0B8576;cursor:pointer;${justAdded === item.id ? 'animation:ypop .35s ease both' : ''}`)}
+                >
+                  <span className="mi" style={s("font-size:15px")}>{justAdded === item.id ? 'check' : 'add'}</span>
+                  {justAdded === item.id ? 'In cart' : 'Add'}
+                </button>
               </div>
             </div>
           ))}

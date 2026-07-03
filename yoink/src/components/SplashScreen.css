@@ -1,3 +1,8 @@
+/* Yoink splash: the wordmark pops in, a vaudeville hook cane shoots in from
+   the right, hooks it, winds up, and yanks it offstage — sparks, speed
+   lines, screen shake, white-flash reveal. Snappy by design: the whole
+   thing runs in --yoink-duration (1800ms). */
+
 .yoink-splash {
   position: absolute;
   inset: 0;
@@ -5,54 +10,32 @@
   overflow: hidden;
   pointer-events: none;
   background: #fff;
-  --yoink-glove-fill: #fff;
-  --yoink-glove-outline: #171326;
-  --yoink-glove-cuff: var(--yoink-brand);
-  --yoink-glove-crease: rgba(23, 19, 38, .32);
-  animation: yoinkSplashOverlay calc(var(--yoink-duration) + 260ms) linear both;
+  animation: yoinkSplashOverlay calc(var(--yoink-duration) + 200ms) linear both;
 }
 
-.yoink-splash__shadow {
+.yoink-splash__stage {
   position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: calc(50% + 54px);
-  width: 176px;
-  height: 15px;
-  border-radius: 999px;
-  background: rgba(106, 90, 205, .13);
-  opacity: 0;
-  transform: translateX(-50%) scaleX(.55);
-  animation: yoinkSplashShadow var(--yoink-duration) linear both;
+  inset: 0;
+  overflow: hidden;
+  animation: yoinkSplashShake var(--yoink-duration) linear both;
 }
 
 .yoink-splash__rig {
   position: absolute;
-  z-index: 5;
   left: 50%;
   top: 50%;
-  width: min(340px, 86%);
-  height: 235px;
-  transform: translate3d(-50%, -50%, 0);
-  transform-origin: 52% 42%;
-  animation: yoinkSplashRig var(--yoink-duration) linear both;
+  animation: yoinkSplashYank var(--yoink-duration) cubic-bezier(.3, 0, .2, 1) both;
 }
 
 .yoink-splash__logo {
-  position: absolute;
-  z-index: 4;
-  left: 50%;
-  top: 135px;
+  position: relative;
   display: inline-flex;
   align-items: baseline;
   color: var(--yoink-brand);
   font: 700 86px/1 Fredoka, Nunito, sans-serif;
   letter-spacing: .01em;
-  transform: translate3d(-50%, -50%, 0);
-  transform-origin: 50% 52%;
   white-space: nowrap;
-  will-change: transform, opacity;
-  animation: yoinkSplashLogo var(--yoink-duration) linear both;
+  animation: yoinkSplashLogo var(--yoink-duration) cubic-bezier(.2, 1.4, .3, 1) both;
 }
 
 .yoink-splash__word,
@@ -72,107 +55,76 @@
   animation: yoinkSplashBang var(--yoink-duration) linear both;
 }
 
-.yoink-splash__cover {
+.yoink-splash__cane-slide {
   position: absolute;
-  z-index: 7;
-  left: 50%;
-  top: 136px;
-  width: 268px;
-  height: 104px;
-  border-radius: 54px;
-  background: #fff;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(.78, .45);
-  animation: yoinkSplashCover var(--yoink-duration) linear both;
+  left: -125px;
+  top: 50%;
+  width: 790px;
+  height: 212px;
+  margin-top: -110px;
+  animation: yoinkSplashCane var(--yoink-duration) cubic-bezier(.2, .9, .2, 1) both;
+  will-change: transform, opacity;
 }
 
-.yoink-splash__hand {
-  position: absolute;
-  z-index: 8;
-  left: 50%;
-  top: 0;
-  width: 232px;
-  height: 232px;
-  opacity: 0;
-  transform: translate3d(-50%, -238px, 0) rotate(-5deg) scale(.94);
-  transform-origin: 50% 20%;
-  animation: yoinkSplashHand var(--yoink-duration) cubic-bezier(.2, .82, .18, 1) both;
+.yoink-splash__cane {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 7px 0 rgba(23, 19, 38, .08));
 }
 
-.yoink-splash__hand-slot {
+.yoink-splash__lines {
   position: absolute;
-  z-index: 7;
+  inset: 0;
+}
+
+.yoink-splash__line {
+  position: absolute;
   left: 50%;
-  top: 168px;
-  width: 128px;
-  height: 22px;
+  top: 50%;
+  height: 8px;
   border-radius: 999px;
-  background: rgba(23, 19, 38, .1);
   opacity: 0;
-  transform: translateX(-50%) scale(.58);
-  animation: yoinkSplashHandSlot var(--yoink-duration) linear both;
+  will-change: transform, opacity;
 }
 
-.yoink-splash__caught-logo {
+.yoink-splash__line--one {
+  width: 96px;
+  margin-top: -34px;
+  background: rgba(106, 90, 205, .4);
+  animation: yoinkSplashLine var(--yoink-duration) ease-out both;
+}
+
+.yoink-splash__line--two {
+  width: 64px;
+  margin-top: 2px;
+  background: #FFB84D;
+  animation: yoinkSplashLineTwo var(--yoink-duration) ease-out both;
+}
+
+.yoink-splash__line--three {
+  width: 44px;
+  margin-top: 30px;
+  background: rgba(23, 19, 38, .22);
+  animation: yoinkSplashLine var(--yoink-duration) ease-out both;
+}
+
+.yoink-splash__spark {
   position: absolute;
-  z-index: 11;
-  left: 47%;
-  top: 80%;
-  display: inline-flex;
-  align-items: baseline;
-  color: var(--yoink-brand);
-  font: 700 58px/1 Fredoka, Nunito, sans-serif;
-  letter-spacing: .01em;
-  white-space: nowrap;
-  opacity: 0;
-  text-shadow: 0 4px 0 rgba(106, 90, 205, .1);
-  transform-origin: 50% 46%;
-  will-change: opacity, transform;
-  animation: yoinkSplashCaughtLogo var(--yoink-duration) cubic-bezier(.14, .94, .1, 1) both;
-}
-
-.yoink-splash__caught-logo span {
-  display: inline-block;
-}
-
-.yoink-splash__hand-cover {
-  position: absolute;
-  z-index: 10;
   left: 50%;
-  top: 63%;
-  width: 154px;
-  height: 42px;
-  border-radius: 999px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, .92), rgba(255, 255, 255, 0) 64%);
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
   opacity: 0;
-  transform: translateX(-50%) scale(.72);
-  pointer-events: none;
-  animation: yoinkSplashHandCover var(--yoink-duration) linear both;
+  will-change: transform, opacity;
+  animation: yoinkSplashSpark var(--yoink-duration) ease-out both;
 }
 
-.yoink-splash__hand-frame {
-  position: absolute;
-  z-index: 12;
-  inset: -12px;
-  width: calc(100% + 24px);
-  height: calc(100% + 24px);
-  object-fit: contain;
-  object-position: center;
-  opacity: 0;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 9px 0 rgba(23, 19, 38, .08));
-  transform-origin: 50% 50%;
-  will-change: opacity, transform;
-}
-
-.yoink-splash__hand-frame--open {
-  animation: yoinkSplashHandFrameOpen var(--yoink-duration) cubic-bezier(.22, 1, .36, 1) both;
-}
-
-.yoink-splash__hand-frame--grab {
-  animation: yoinkSplashHandFrameGrab var(--yoink-duration) cubic-bezier(.22, 1, .36, 1) both;
-}
+.yoink-splash__spark--one { background: #FFB84D; --sx: 64px; --sy: -52px; }
+.yoink-splash__spark--two { background: #FF3D9A; --sx: -78px; --sy: -30px; }
+.yoink-splash__spark--three { background: #10B5A0; --sx: -58px; --sy: 46px; }
+.yoink-splash__spark--four { background: #6A5ACD; --sx: 48px; --sy: 58px; }
 
 .yoink-splash__white-flash {
   position: absolute;
@@ -184,552 +136,87 @@
   border-radius: 50%;
   background: #fff;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(.22);
-  transform-origin: 50% 50%;
+  transform: translate(-50%, -50%) scale(.2);
   animation: yoinkSplashWhiteFlash var(--yoink-duration) ease both;
   will-change: opacity, transform;
 }
 
-.yoink-splash__wrist {
-  position: absolute;
-  left: 76px;
-  top: -59px;
-  width: 56px;
-  height: 90px;
-  border-radius: 0 0 24px 24px;
-  background: var(--yoink-glove-cuff);
-  border: 5px solid var(--yoink-glove-outline);
-  border-top: 0;
-  box-shadow: inset 0 -7px rgba(0, 0, 0, .1);
-}
-
-.yoink-splash__open-hand,
-.yoink-splash__closed-hand {
-  position: absolute;
-  inset: 0;
-}
-
-.yoink-splash__open-hand {
-  animation: yoinkSplashOpenHand var(--yoink-duration) linear both;
-}
-
-.yoink-splash__open-palm {
-  position: absolute;
-  left: 39px;
-  top: 4px;
-  width: 126px;
-  height: 96px;
-  border-radius: 46px 46px 34px 34px;
-  background: var(--yoink-glove-fill);
-  border: 5px solid var(--yoink-glove-outline);
-  box-shadow: inset -7px -9px rgba(23, 19, 38, .08), 0 7px 0 rgba(23, 19, 38, .08);
-}
-
-.yoink-splash__open-fingers {
-  position: absolute;
-  left: 29px;
-  top: 56px;
-  width: 150px;
-  height: 112px;
-  transform-origin: 50% 0;
-  animation: yoinkSplashOpenFingers var(--yoink-duration) linear both;
-}
-
-.yoink-splash__finger {
-  position: absolute;
-  top: 0;
-  width: 34px;
-  height: 92px;
-  border-radius: 999px;
-  background: var(--yoink-glove-fill);
-  border: 5px solid var(--yoink-glove-outline);
-  box-shadow: inset -5px -8px rgba(23, 19, 38, .08);
-  transform-origin: 50% 8%;
-}
-
-.yoink-splash__finger::after {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 17px;
-  width: 14px;
-  height: 28px;
-  border-radius: 50%;
-  border-left: 3px solid var(--yoink-glove-crease);
-  opacity: .55;
-}
-
-.yoink-splash__finger--one {
-  left: 3px;
-  top: 13px;
-  height: 76px;
-  transform: rotate(10deg);
-}
-
-.yoink-splash__finger--two {
-  left: 37px;
-  top: 0;
-  height: 96px;
-  transform: rotate(3deg);
-}
-
-.yoink-splash__finger--three {
-  left: 72px;
-  top: 1px;
-  height: 94px;
-  transform: rotate(-3deg);
-}
-
-.yoink-splash__finger--four {
-  left: 107px;
-  top: 13px;
-  height: 76px;
-  transform: rotate(-11deg);
-}
-
-.yoink-splash__open-thumb {
-  position: absolute;
-  left: 17px;
-  top: 84px;
-  width: 84px;
-  height: 34px;
-  border-radius: 999px;
-  background: var(--yoink-glove-fill);
-  border: 5px solid var(--yoink-glove-outline);
-  transform: rotate(36deg);
-  transform-origin: 88% 50%;
-  animation: yoinkSplashOpenThumb var(--yoink-duration) linear both;
-  box-shadow: inset -5px -4px rgba(23, 19, 38, .08);
-}
-
-.yoink-splash__closed-hand {
-  opacity: 0;
-  transform: scale(.9) translateY(12px);
-  transform-origin: 50% 62%;
-  animation: yoinkSplashClosedHand var(--yoink-duration) linear both;
-}
-
-.yoink-splash__fist {
-  position: absolute;
-  left: 28px;
-  top: 70px;
-  width: 150px;
-  height: 84px;
-  border-radius: 44px 44px 40px 40px;
-  border: 5px solid var(--yoink-glove-outline);
-  background: var(--yoink-glove-fill);
-  box-shadow: inset -8px -10px rgba(23, 19, 38, .08), 0 8px 0 rgba(23, 19, 38, .08);
-}
-
-.yoink-splash__knuckle {
-  position: absolute;
-  top: -25px;
-  width: 34px;
-  height: 58px;
-  border-radius: 999px;
-  background: var(--yoink-glove-fill);
-  border: 5px solid var(--yoink-glove-outline);
-  box-shadow: inset -4px -7px rgba(23, 19, 38, .08);
-  transform-origin: 50% 90%;
-}
-
-.yoink-splash__knuckle::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 18px;
-  width: 14px;
-  height: 21px;
-  border-radius: 50%;
-  border-left: 3px solid var(--yoink-glove-crease);
-  opacity: .5;
-}
-
-.yoink-splash__knuckle--one {
-  left: 6px;
-  top: -17px;
-  height: 47px;
-  transform: rotate(8deg);
-}
-
-.yoink-splash__knuckle--two {
-  left: 39px;
-  transform: rotate(2deg);
-}
-
-.yoink-splash__knuckle--three {
-  left: 73px;
-  transform: rotate(-3deg);
-}
-
-.yoink-splash__knuckle--four {
-  left: 107px;
-  top: -16px;
-  height: 47px;
-  transform: rotate(-10deg);
-}
-
-.yoink-splash__fist::before {
-  content: "";
-  position: absolute;
-  left: 33px;
-  top: 22px;
-  width: 72px;
-  height: 28px;
-  border-radius: 50%;
-  border-top: 4px solid var(--yoink-glove-crease);
-  transform: rotate(-3deg);
-}
-
-.yoink-splash__fist::after {
-  content: "";
-  position: absolute;
-  left: 102px;
-  top: 36px;
-  width: 28px;
-  height: 24px;
-  border-radius: 50%;
-  border-left: 4px solid var(--yoink-glove-crease);
-  transform: rotate(18deg);
-}
-
-.yoink-splash__fist-thumb {
-  position: absolute;
-  left: 28px;
-  top: 105px;
-  width: 122px;
-  height: 36px;
-  border-radius: 999px;
-  background: var(--yoink-glove-fill);
-  border: 5px solid var(--yoink-glove-outline);
-  transform: rotate(-10deg);
-  box-shadow: inset -6px -4px rgba(23, 19, 38, .08);
-}
-
-.yoink-splash__fist-highlight {
-  position: absolute;
-  left: 92px;
-  top: 76px;
-  width: 42px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--yoink-glove-crease);
-  opacity: .45;
-  transform: rotate(-8deg);
-}
-
 @keyframes yoinkSplashOverlay {
-  0%, 92% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    visibility: hidden;
-  }
+  0%, 90% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
 }
 
+/* Wordmark pop-in with overshoot, squish on hook contact. */
 @keyframes yoinkSplashLogo {
-  0%, 12% {
-    opacity: 0;
-    transform: translate3d(-50%, -50%, 0) scale(.97);
-  }
-  19%, 38% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(1);
-  }
-  44% {
-    opacity: 1;
-    transform: translate3d(-50%, -43%, 0) scale(1.14, .62);
-  }
-  49% {
-    opacity: 1;
-    transform: translate3d(-50%, -53%, 0) scale(.58, .34);
-  }
-  50%, 100% {
-    opacity: 0;
-    transform: translate3d(-50%, -53%, 0) scale(.58, .34);
-  }
+  0%, 6% { opacity: 0; transform: scale(.7); }
+  13% { opacity: 1; transform: scale(1.12); }
+  18%, 41% { opacity: 1; transform: scale(1); }
+  44% { opacity: 1; transform: translateX(-9px) scale(.82, 1.08); }
+  48%, 100% { opacity: 1; transform: translateX(-4px) scale(.92, 1.02); }
 }
 
 @keyframes yoinkSplashWord {
-  0%, 38% {
-    letter-spacing: .01em;
-    transform: translateX(0);
-  }
-  44% {
-    letter-spacing: -.026em;
-    transform: translateX(-1px) scaleX(.92);
-  }
-  49%, 100% {
-    letter-spacing: -.06em;
-    transform: translateX(-2px) scaleX(.78);
-  }
+  0%, 41% { letter-spacing: .01em; transform: none; }
+  46%, 100% { letter-spacing: -.03em; transform: scaleX(.94); }
 }
 
+/* The bang slams down late for a double-hit. */
 @keyframes yoinkSplashBang {
-  0%, 14% {
-    opacity: 0;
-    transform: translate3d(5px, -42px, 0) rotate(-8deg) scale(.82);
-  }
-  25% {
-    opacity: 1;
-    transform: translate3d(1px, 7px, 0) rotate(5deg) scale(1.16, .82);
-  }
-  33%, 100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0) scale(1);
-  }
+  0%, 15% { opacity: 0; transform: translate3d(4px, -46px, 0) rotate(-9deg) scale(.8); }
+  22% { opacity: 1; transform: translate3d(1px, 6px, 0) rotate(5deg) scale(1.18, .8); }
+  28%, 100% { opacity: 1; transform: none; }
 }
 
-@keyframes yoinkSplashHand {
-  0%, 35% {
-    opacity: 0;
-    transform: translate3d(-50%, -174px, 0) rotate(-5deg) scale(.96);
-  }
-  43% {
-    opacity: 1;
-    transform: translate3d(-50%, -70px, 0) rotate(2deg) scale(1.03);
-  }
-  49%, 58% {
-    opacity: 1;
-    transform: translate3d(-50%, -34px, 0) rotate(-1deg) scale(1);
-  }
-  66% {
-    opacity: 1;
-    transform: translate3d(-56%, -170px, 0) rotate(-9deg) scale(.9);
-  }
-  78% {
-    opacity: 1;
-    transform: translate3d(-62%, -430px, 0) rotate(-14deg) scale(.8);
-  }
-  84%, 100% {
-    opacity: 0;
-    transform: translate3d(-64%, -560px, 0) rotate(-16deg) scale(.74);
-  }
+/* Cane shoots in fast, tiny overshoot, then rides the rig out. */
+@keyframes yoinkSplashCane {
+  0%, 33% { opacity: 0; transform: translate3d(700px, 0, 0) rotate(3deg); }
+  36% { opacity: 1; transform: translate3d(340px, 0, 0) rotate(2deg); }
+  40% { opacity: 1; transform: translate3d(-16px, 0, 0) rotate(-1deg); }
+  44%, 100% { opacity: 1; transform: none; }
 }
 
-@keyframes yoinkSplashHandFrameOpen {
-  0%, 41% {
-    opacity: 0;
-    transform: translate3d(0, -6px, 0) rotate(-3deg) scale(.98);
-  }
-  43%, 47% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(-1deg) scale(1);
-  }
-  50%, 100% {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0) rotate(1deg) scale(.92, .76);
-  }
+/* Wind-up left, then the whole rig (logo + cane) rockets off the right
+   edge with a smear stretch. */
+@keyframes yoinkSplashYank {
+  0%, 48% { opacity: 1; transform: translate(-50%, -50%); }
+  55% { opacity: 1; transform: translate(-50%, -50%) translateX(-22px) rotate(-1deg); }
+  59% { opacity: 1; transform: translate(-50%, -50%) translateX(190px) skewX(-12deg) scaleX(1.28); }
+  64%, 100% { opacity: 0; transform: translate(-50%, -50%) translateX(680px) skewX(-6deg) scaleX(1.1); }
 }
 
-@keyframes yoinkSplashHandFrameGrab {
-  0%, 47% {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0) rotate(-2deg) scale(.98);
-  }
-  49%, 78% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(-1deg) scale(1);
-  }
-  84%, 100% {
-    opacity: 0;
-    transform: translate3d(0, -4px, 0) rotate(-3deg) scale(.95);
-  }
+@keyframes yoinkSplashShake {
+  0%, 41% { transform: none; }
+  43% { transform: translate(-3px, 2px); }
+  45% { transform: translate(2px, -1px); }
+  47%, 54% { transform: none; }
+  57% { transform: translate(3px, -3px) rotate(.4deg); }
+  60% { transform: translate(-4px, 2px) rotate(-.3deg); }
+  63% { transform: translate(2px, -1px); }
+  66%, 100% { transform: none; }
 }
 
-@keyframes yoinkSplashCaughtLogo {
-  0%, 49% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.55, .42) rotate(-3deg);
-  }
-  50%, 58% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(.55, .42) rotate(-3deg);
-  }
-  70% {
-    opacity: 1;
-    transform: translate(-50%, -52%) scale(.5, .38) rotate(-6deg);
-  }
-  80%, 100% {
-    opacity: 0;
-    transform: translate(-50%, -54%) scale(.42, .3) rotate(-9deg);
-  }
+@keyframes yoinkSplashLine {
+  0%, 55% { opacity: 0; transform: translate(-60px, 0) scaleX(.3); }
+  60% { opacity: .95; transform: translate(40px, 0) scaleX(1.5); }
+  70%, 100% { opacity: 0; transform: translate(190px, 0) scaleX(.6); }
 }
 
-@keyframes yoinkSplashHandSlot {
-  0%, 46% {
-    opacity: 0;
-    transform: translateX(-50%) scale(.45);
-  }
-  50%, 58% {
-    opacity: .46;
-    transform: translateX(-50%) scale(.86, .58);
-  }
-  66%, 100% {
-    opacity: 0;
-    transform: translateX(-50%) scale(.34);
-  }
+@keyframes yoinkSplashLineTwo {
+  0%, 57% { opacity: 0; transform: translate(-40px, 0) scaleX(.3); }
+  62% { opacity: .95; transform: translate(60px, 0) scaleX(1.6); }
+  72%, 100% { opacity: 0; transform: translate(210px, 0) scaleX(.5); }
 }
 
-@keyframes yoinkSplashHandCover {
-  0%, 47% {
-    opacity: 0;
-    transform: translateX(-50%) scale(.6);
-  }
-  50%, 58% {
-    opacity: .82;
-    transform: translateX(-50%) scale(.88, .72);
-  }
-  68%, 100% {
-    opacity: 0;
-    transform: translateX(-50%) scale(.54);
-  }
+@keyframes yoinkSplashSpark {
+  0%, 54% { opacity: 0; transform: translate(0, 0) scale(.4) rotate(0); }
+  60% { opacity: 1; }
+  76%, 100% { opacity: 0; transform: translate(var(--sx, 50px), var(--sy, -40px)) scale(1) rotate(150deg); }
 }
 
 @keyframes yoinkSplashWhiteFlash {
-  0%, 70% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.14);
-  }
-  80%, 92% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.24);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.38);
-  }
-}
-
-@keyframes yoinkSplashOpenHand {
-  0%, 55% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  61% {
-    opacity: .88;
-    transform: translateY(8px) scale(1.02, .94);
-  }
-  65%, 100% {
-    opacity: 0;
-    transform: translateY(18px) scale(.9, .78);
-  }
-}
-
-@keyframes yoinkSplashOpenFingers {
-  0%, 55% {
-    transform: scale(1, 1);
-  }
-  61% {
-    transform: scale(1.06, .72) translateY(15px);
-  }
-  65%, 100% {
-    transform: scale(.88, .52) translateY(26px);
-  }
-}
-
-@keyframes yoinkSplashOpenThumb {
-  0%, 55% {
-    transform: rotate(36deg) translate3d(0, 0, 0);
-  }
-  61% {
-    transform: rotate(17deg) translate3d(18px, 15px, 0);
-  }
-  65%, 100% {
-    transform: rotate(7deg) translate3d(26px, 20px, 0);
-  }
-}
-
-@keyframes yoinkSplashClosedHand {
-  0%, 57% {
-    opacity: 0;
-    transform: scale(.86) translateY(18px) rotate(0);
-  }
-  62% {
-    opacity: 1;
-    transform: scale(1.04, .96) translateY(5px) rotate(-1deg);
-  }
-  68%, 100% {
-    opacity: 1;
-    transform: scale(1) translateY(3px) rotate(-2deg);
-  }
-}
-
-@keyframes yoinkSplashCover {
-  0%, 58% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.78, .45);
-  }
-  62% {
-    opacity: .98;
-    transform: translate(-50%, -50%) scale(1, .78);
-  }
-  68%, 100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(.96, .82);
-  }
-}
-
-@keyframes yoinkSplashRig {
-  0%, 62% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotate(0) scale(1);
-  }
-  66% {
-    opacity: 1;
-    transform: translate3d(-50%, -56%, 0) rotate(-1deg) scale(1.006, .992);
-  }
-  73% {
-    opacity: 1;
-    transform: translate3d(-53%, -128%, 0) rotate(-6deg) scale(.78);
-  }
-  84% {
-    opacity: .75;
-    transform: translate3d(-58%, -216%, 0) rotate(-10deg) scale(.48);
-  }
-  93%, 100% {
-    opacity: 0;
-    transform: translate3d(-60%, -276%, 0) rotate(-12deg) scale(.26);
-  }
-}
-
-@keyframes yoinkSplashShadow {
-  0%, 8% {
-    opacity: 0;
-    transform: translateX(-50%) scaleX(.55);
-  }
-  18% {
-    opacity: .34;
-    transform: translateX(-50%) scaleX(.82);
-  }
-  36%, 58% {
-    opacity: .24;
-    transform: translateX(-50%) scaleX(1);
-  }
-  68% {
-    opacity: .16;
-    transform: translateX(-50%) translateY(-34px) scaleX(.72);
-  }
-  82%, 100% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-118px) scaleX(.24);
-  }
-}
-
-@media (max-width: 520px) {
-  .yoink-splash__logo {
-    font-size: 64px;
-  }
-
-  .yoink-splash__hand {
-    width: 176px;
-    height: 176px;
-  }
-
-  .yoink-splash__caught-logo {
-    font-size: 44px;
-  }
+  0%, 62% { opacity: 0; transform: translate(-50%, -50%) scale(.16); }
+  74%, 90% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
 }
 
 @media (prefers-reduced-motion: reduce) {

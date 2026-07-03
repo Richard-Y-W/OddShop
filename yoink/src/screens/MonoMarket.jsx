@@ -107,6 +107,7 @@ function ListingCard({ item, onOpenProduct = () => {} }) {
 export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () => {}, cartCount = 0, balance = 0 }) {
   const [feed, setFeed] = useState(() => makeMarketFeed(0, MARKET_PAGE_SIZE));
   const [selectedCategory, setSelectedCategory] = useState('For you');
+  const [query, setQuery] = useState('');
   const feedEndRef = useRef(null);
   const lastLoadRef = useRef(0);
   const hasMore = feed.length < MARKET_MAX_ITEMS;
@@ -132,6 +133,15 @@ export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () =
   }, []);
 
   const categoryChips = useMemo(() => marketCats, []);
+  const searchTerm = query.trim().toLowerCase();
+  const visibleFeed = searchTerm
+    ? feed.filter((item) => item.name.toLowerCase().includes(searchTerm) || item.seller.toLowerCase().includes(searchTerm))
+    : feed;
+
+  // While searching, keep paging the backend until enough matches surface.
+  useEffect(() => {
+    if (searchTerm && hasMore && visibleFeed.length < MARKET_PAGE_SIZE) loadMore();
+  }, [searchTerm, hasMore, visibleFeed.length, loadMore, feed.length]);
 
   useEffect(() => {
     let tries = 0;
@@ -210,9 +220,23 @@ export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () =
             <span style={s(`font:700 12.5px 'Nunito';color:${ink}`)}>All</span>
             <span className="mi" style={s(`font-size:16px;color:${muted}`)}>expand_more</span>
           </div>
-          <div style={s("flex:1;display:flex;align-items:center;padding:0 11px")}>
-            <span style={s(`font:600 13px 'Nunito';color:${muted}`)}>Search 2M listings...</span>
-          </div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search 2M listings..."
+            aria-label="Search listings"
+            style={s(`flex:1;min-width:0;height:100%;border:0;background:transparent;padding:0 11px;font:600 13px 'Nunito';color:${ink};outline:none`)}
+          />
+          {query && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setQuery('')}
+              style={s(`border:0;background:transparent;padding:0 4px;display:flex;align-items:center;cursor:pointer;color:${muted}`)}
+            >
+              <span className="mi" style={s("font-size:19px")}>close</span>
+            </button>
+          )}
           <div style={s(`width:48px;height:100%;background:${ink};display:flex;align-items:center;justify-content:center`)}>
             <span className="mi" style={s("font-size:22px;color:#fff")}>search</span>
           </div>
@@ -241,7 +265,7 @@ export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () =
         </div>
 
         <div style={s("display:flex;align-items:center;justify-content:space-between;padding:13px 13px 8px")}>
-          <div style={s(`font:700 16px 'Fredoka';color:${ink}`)}>Fresh listings</div>
+          <div style={s(`font:700 16px 'Fredoka';color:${ink}`)}>{searchTerm ? `Finds for "${query.trim()}"` : 'Fresh listings'}</div>
           <div style={s("display:flex;align-items:center;gap:2px")}>
             <span style={s(`font:700 12px 'Nunito';color:${ink}`)}>Best match</span>
             <span className="mi" style={s(`font-size:16px;color:${ink}`)}>expand_more</span>
@@ -249,10 +273,17 @@ export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () =
         </div>
 
         <div style={s("display:flex;flex-direction:column;gap:10px;padding:0 13px 100px")}>
-          {feed.map((item) => <ListingCard key={item.id} item={item} onOpenProduct={onOpenProduct} />)}
+          {visibleFeed.map((item) => <ListingCard key={item.id} item={item} onOpenProduct={onOpenProduct} />)}
+          {searchTerm && visibleFeed.length === 0 && !hasMore && (
+            <div style={s(`padding:26px 16px;border:1.5px dashed #DCD5EF;border-radius:16px;background:#fff;text-align:center;font:700 13px 'Nunito';color:${muted}`)}>
+              No finds for &ldquo;{query.trim()}&rdquo; — try &ldquo;polaroid&rdquo; or &ldquo;duck&rdquo;
+            </div>
+          )}
           <div ref={feedEndRef} style={s("display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 0 6px")}>
             {hasMore && <div style={s(`width:28px;height:28px;border-radius:50%;border:3px solid ${line};border-top-color:${ink};animation:yspin .8s linear infinite`)} />}
-            <span style={s(`font:700 11px 'Nunito';color:${muted}`)}>{hasMore ? 'Finding more finds...' : 'All finds loaded'}</span>
+            <span style={s(`font:700 11px 'Nunito';color:${muted}`)}>
+              {hasMore ? (searchTerm ? 'Searching the market...' : 'Finding more finds...') : 'All finds loaded'}
+            </span>
           </div>
         </div>
       </div>

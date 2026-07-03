@@ -1,16 +1,15 @@
 import { useEffect } from 'react';
-import handGrab from '../assets/yoink-glove-hand-grab.png';
-import handOpen from '../assets/yoink-glove-hand-open.png';
+import { Cane } from './SplashScreen.jsx';
 import './OrderYoinked.css';
 
-export const ORDER_YOINKED_DURATION_MS = 2000;
+export const ORDER_YOINKED_DURATION_MS = 1600;
 
-// Order-placed celebration: the glove snatches the shopping bag off the
-// screen, sparks pop, "Yoink'd!" lands, then the overlay hands control back
-// via onDone. Same two glove poses and motion language as the splash.
+// Order-placed celebration: the hook cane snatches the shopping bag off the
+// screen sideways — same snappy motion language as the splash — then
+// "Yoink'd!" slams in and control returns via onDone.
 export default function OrderYoinked({ stripe, onDone = () => {} }) {
   useEffect(() => {
-    const timer = window.setTimeout(onDone, ORDER_YOINKED_DURATION_MS);
+    const timer = window.setTimeout(onDone, ORDER_YOINKED_DURATION_MS + 250);
     return () => window.clearTimeout(timer);
   }, [onDone]);
 
@@ -20,14 +19,15 @@ export default function OrderYoinked({ stripe, onDone = () => {} }) {
       aria-label="Order placed"
       style={{ '--yoink-grab-duration': `${ORDER_YOINKED_DURATION_MS}ms`, '--yoink-grab-stripe': stripe }}
     >
-      <div className="yoink-order-grab__bag" aria-hidden="true">
-        <div className="yoink-order-grab__bag-handle" />
-        <div className="yoink-order-grab__bag-body" />
-        <div className="yoink-order-grab__bag-face">Y</div>
-      </div>
-      <div className="yoink-order-grab__hand" aria-hidden="true">
-        <img className="yoink-order-grab__frame yoink-order-grab__frame--open" src={handOpen} alt="" />
-        <img className="yoink-order-grab__frame yoink-order-grab__frame--grab" src={handGrab} alt="" />
+      <div className="yoink-order-grab__rig" aria-hidden="true">
+        <div className="yoink-order-grab__bag">
+          <div className="yoink-order-grab__bag-handle" />
+          <div className="yoink-order-grab__bag-body" />
+          <div className="yoink-order-grab__bag-face">Y</div>
+        </div>
+        <div className="yoink-order-grab__cane-slide">
+          <Cane className="yoink-order-grab__cane" />
+        </div>
       </div>
       <span className="yoink-order-grab__spark yoink-order-grab__spark--one" aria-hidden="true" />
       <span className="yoink-order-grab__spark yoink-order-grab__spark--two" aria-hidden="true" />

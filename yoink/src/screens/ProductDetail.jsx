@@ -41,6 +41,14 @@ export default function ProductDetail({ listing, onBack, cartCount = 0, onAddToC
   const [qty, setQty] = useState(1);
   const [favorite, setFavorite] = useState(false);
   const [cartMotionKey, setCartMotionKey] = useState(0);
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [reviewsExpanded, setReviewsExpanded] = useState(false);
+  const [helpfulVotes, setHelpfulVotes] = useState({});
+
+  const voteHelpful = (reviewId) => {
+    setHelpfulVotes((votes) => ({ ...votes, [reviewId]: !votes[reviewId] }));
+  };
+  const visibleReviews = reviewsExpanded ? detail.reviews : detail.reviews.slice(0, 2);
 
   const incQty = () => setQty((current) => Math.min(current + 1, detail.quantityAvailable));
   const decQty = () => setQty((current) => Math.max(current - 1, 1));
@@ -168,10 +176,16 @@ export default function ProductDetail({ listing, onBack, cartCount = 0, onAddToC
         </button>
 
         <SectionTitle>Description</SectionTitle>
-        <div style={s("font:600 13.5px/1.55 'Nunito';color:#3A3540;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden")}>
+        <div style={s(`font:600 13.5px/1.55 'Nunito';color:#3A3540;${descExpanded ? '' : 'display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden'}`)}>
           {detail.description}
         </div>
-        <div style={s(`font:700 13.5px 'Nunito';color:${brand};margin-top:4px`)}>Read more</div>
+        <button
+          type="button"
+          onClick={() => setDescExpanded((current) => !current)}
+          style={s(`border:0;background:transparent;padding:0;text-align:left;font:700 13.5px 'Nunito';color:${brand};margin-top:4px;cursor:pointer`)}
+        >
+          {descExpanded ? 'Show less' : 'Read more'}
+        </button>
 
         <div style={s("margin-top:22px")}>
           <div style={s("display:flex;align-items:center;justify-content:space-between")}>
@@ -191,7 +205,7 @@ export default function ProductDetail({ listing, onBack, cartCount = 0, onAddToC
             ))}
           </div>
           <div style={s("display:flex;flex-direction:column;margin-top:6px")}>
-            {detail.reviews.map((review) => (
+            {visibleReviews.map((review) => (
               <div key={review.id} style={s("padding:15px 0;border-bottom:1.5px solid #EFECF6")}>
                 <div style={s("display:flex;align-items:center;gap:9px")}>
                   <div style={s(`width:32px;height:32px;border-radius:50%;background:${review.avatar};display:flex;align-items:center;justify-content:center;font:700 12px 'Fredoka';color:#fff;flex:none`)}>
@@ -210,16 +224,25 @@ export default function ProductDetail({ listing, onBack, cartCount = 0, onAddToC
                   <StarRow rating={review.rating} />
                 </div>
                 <div style={s("font:600 13px/1.5 'Nunito';color:#2A2533;margin-top:9px")}>{review.text}</div>
-                <div style={s(`display:inline-flex;align-items:center;gap:6px;margin-top:11px;padding:6px 13px;border-radius:999px;border:1.5px solid ${line};font:700 11.5px 'Nunito';color:#5A5566;cursor:pointer`)}>
-                  <span className="mi" style={s("font-size:15px")}>thumb_up</span>
-                  Helpful &middot; {review.helpful}
-                </div>
+                <button
+                  type="button"
+                  aria-pressed={Boolean(helpfulVotes[review.id])}
+                  onClick={() => voteHelpful(review.id)}
+                  style={s(`display:inline-flex;align-items:center;gap:6px;margin-top:11px;padding:6px 13px;border-radius:999px;border:1.5px solid ${helpfulVotes[review.id] ? brand : line};background:${helpfulVotes[review.id] ? wash : '#fff'};font:700 11.5px 'Nunito';color:${helpfulVotes[review.id] ? brand : '#5A5566'};cursor:pointer`)}
+                >
+                  <span className="mi" style={s(`font-size:15px;${helpfulVotes[review.id] ? "font-variation-settings:'FILL' 1" : ''}`)}>thumb_up</span>
+                  Helpful &middot; {review.helpful + (helpfulVotes[review.id] ? 1 : 0)}
+                </button>
               </div>
             ))}
           </div>
-          <button type="button" style={s(`display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;width:100%;background:#fff;border:2px solid ${ink};color:${ink};font:700 14px 'Fredoka';padding:13px;border-radius:14px;box-shadow:0 4px 0 ${ink};cursor:pointer`)}>
-            Read all 290 reviews
-            <span className="mi" style={s("font-size:18px")}>chevron_right</span>
+          <button
+            type="button"
+            onClick={() => setReviewsExpanded((current) => !current)}
+            style={s(`display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;width:100%;background:#fff;border:2px solid ${ink};color:${ink};font:700 14px 'Fredoka';padding:13px;border-radius:14px;box-shadow:0 4px 0 ${ink};cursor:pointer`)}
+          >
+            {reviewsExpanded ? 'Show fewer reviews' : `Read all ${detail.reviews.length} reviews`}
+            <span className="mi" style={s("font-size:18px")}>{reviewsExpanded ? 'expand_less' : 'chevron_right'}</span>
           </button>
         </div>
 
