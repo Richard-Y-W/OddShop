@@ -1,3 +1,5 @@
+import handGrab from '../assets/yoink-glove-hand-grab.png';
+import handOpen from '../assets/yoink-glove-hand-open.png';
 import { splashMotion } from '../splashMotion.js';
 import './SplashScreen.css';
 
@@ -16,19 +18,17 @@ export default function SplashScreen() {
         </div>
         <div className="yoink-splash__cover" />
         <div className="yoink-splash__hand" aria-hidden="true">
-          <div className="yoink-splash__wrist" />
-          <div className="yoink-splash__open-hand">
-            <div className="yoink-splash__open-palm" />
-            <div className="yoink-splash__open-fingers" />
-            <div className="yoink-splash__open-thumb" />
+          <div className="yoink-splash__hand-slot" />
+          <div className="yoink-splash__caught-logo">
+            <span>Yoink</span>
+            <span>!</span>
           </div>
-          <div className="yoink-splash__closed-hand">
-            <div className="yoink-splash__fist" />
-            <div className="yoink-splash__fist-thumb" />
-            <div className="yoink-splash__fist-highlight" />
-          </div>
+          <div className="yoink-splash__hand-cover" />
+          <img className="yoink-splash__hand-frame yoink-splash__hand-frame--open" src={handOpen} alt="" />
+          <img className="yoink-splash__hand-frame yoink-splash__hand-frame--grab" src={handGrab} alt="" />
         </div>
       </div>
+      <div className="yoink-splash__white-flash" aria-hidden="true" />
     </div>
   );
 }

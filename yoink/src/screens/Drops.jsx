@@ -1,10 +1,65 @@
+import { useEffect, useRef, useState } from 'react';
 import { s } from '../style.js';
 import Mochi from '../components/Mochi.jsx';
 import { dropItems } from '../data.js';
+import { fetchDrops, spinWheel, toggleDropNotify } from '../api.js';
+import { useCountdowns } from '../useCountdowns.js';
 
 const coinBadge = 'radial-gradient(circle at 35% 28%,#FFE9A8,#FFC700 62%,#E0A400)';
 
-export default function Drops({ dropH, dropM, dropS }) {
+const SPIN_TRAVEL_MS = 2600;
+const FULL_TURNS = 4;
+
+export default function Drops({ balance = 0, streak = 0, canSpin = true, onWallet = () => {} }) {
+  const { dropH, dropM, dropS } = useCountdowns();
+  const [drops, setDrops] = useState(dropItems.map((item) => ({ ...item, notifying: false })));
+  const [spinning, setSpinning] = useState(false);
+  const [spinDeg, setSpinDeg] = useState(0);
+  const [reward, setReward] = useState(null);
+  const rewardTimer = useRef(null);
+
+  useEffect(() => {
+    fetchDrops().then((data) => {
+      if (Array.isArray(data.drops)) setDrops(data.drops);
+    }).catch(() => {});
+    return () => window.clearTimeout(rewardTimer.current);
+  }, []);
+
+  const handleNotify = (dropId) => {
+    setDrops((current) => current.map((item) => (
+      item.id === dropId ? { ...item, notifying: !item.notifying } : item
+    )));
+    toggleDropNotify(dropId).catch(() => {});
+  };
+
+  const heroNotifying = drops.find((item) => item.id === 1)?.notifying ?? false;
+
+  const handleSpin = async () => {
+    if (spinning || !canSpin) return;
+    setSpinning(true);
+    setReward(null);
+    try {
+      const result = await spinWheel();
+      if (!result.ok) {
+        setSpinning(false);
+        if (result.wallet) onWallet(result.wallet);
+        return;
+      }
+      // Land the winning slice (60° each, first slice centered 30° from top)
+      // under the pointer after a few dramatic full turns.
+      setSpinDeg((current) => current + FULL_TURNS * 360 + (360 - (result.segment * 60 + 30)) - (current % 360));
+      rewardTimer.current = window.setTimeout(() => {
+        setReward(result.reward);
+        setSpinning(false);
+        if (result.wallet) onWallet(result.wallet);
+      }, SPIN_TRAVEL_MS);
+    } catch {
+      setSpinning(false);
+    }
+  };
+
+  const spinLabel = spinning ? 'SPINNING…' : canSpin ? 'SPIN TO WIN' : 'SPUN TODAY';
+
   return (
     <div style={s("min-height:100%;background:#F7F4FD;display:flex;flex-direction:column;font-family:'Nunito',sans-serif;color:#1E1233")}>
 
@@ -18,14 +73,10 @@ export default function Drops({ dropH, dropM, dropS }) {
           <div style={s("display:flex;align-items:center;gap:7px")}>
             <div style={s("display:flex;align-items:center;gap:6px;background:#FFF7DD;border:1.5px solid #FFE39A;border-radius:999px;padding:5px 11px 5px 6px")}>
               <span style={s(`width:18px;height:18px;border-radius:50%;background:${coinBadge};display:inline-flex;align-items:center;justify-content:center;font:700 10px 'Fredoka';color:#8A5A00;box-shadow:0 1px 0 #C98B00;flex:none`)}>Y</span>
-              <span style={s("font:700 13px 'Fredoka';color:#9A6B00")}>2,480</span>
+              <span style={s("font:700 13px 'Fredoka';color:#9A6B00")}>{balance.toLocaleString()}</span>
             </div>
             <div style={s("display:flex;align-items:center;gap:3px;background:#FFE9DF;border:1.5px solid #FFC2A8;border-radius:999px;padding:5px 9px 5px 7px")}>
-              <span className="mi" style={s("font-size:17px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 13px 'Fredoka';color:#D2491F")}>7</span>
-            </div>
-            <div style={s("position:relative;width:38px;height:38px;border-radius:12px;background:#F4EEF4;display:flex;align-items:center;justify-content:center")}>
-              <span className="mi" style={s("font-size:22px;color:#1E1233")}>shopping_bag</span>
-              <span style={s("position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#8B5CF6;color:#fff;font:700 10px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff")}>3</span>
+              <span className="mi" style={s("font-size:17px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 13px 'Fredoka';color:#D2491F")}>{streak}</span>
             </div>
           </div>
         </div>
@@ -60,21 +111,43 @@ export default function Drops({ dropH, dropM, dropS }) {
               <div style={s("background:#fff;border-radius:10px;padding:6px 0;text-align:center;min-width:40px")}><div style={s("font:700 18px 'Fredoka';color:#7C3AED;font-variant-numeric:tabular-nums")}>{dropS}</div><div style={s("font:700 8px 'Nunito';color:#9A8FA6;letter-spacing:.5px")}>SEC</div></div>
               <div style={s("flex:1;display:flex;align-items:center;justify-content:flex-end;gap:5px;color:#fff;font:700 12px 'Nunito'")}><span className="mi" style={s("font-size:18px")}>visibility</span>312 watching</div>
             </div>
-            <div style={s("margin-top:14px;background:#FFC700;color:#1E1233;font:700 15px 'Fredoka';padding:12px;border-radius:14px;text-align:center;box-shadow:0 4px 0 #C99700")}><span className="mi" style={s("font-size:17px;vertical-align:-3px;margin-right:6px;font-variation-settings:'FILL' 1")}>notifications_active</span>Notify me when it drops</div>
+            <button
+              type="button"
+              onClick={() => handleNotify(1)}
+              style={s(`margin-top:14px;width:100%;border:0;background:${heroNotifying ? '#1E1233' : '#FFC700'};color:${heroNotifying ? '#FFC700' : '#1E1233'};font:700 15px 'Fredoka';padding:12px;border-radius:14px;text-align:center;box-shadow:0 4px 0 ${heroNotifying ? '#000' : '#C99700'};cursor:pointer;transition:background .2s ease,color .2s ease`)}
+            >
+              <span className="mi" style={s("font-size:17px;vertical-align:-3px;margin-right:6px;font-variation-settings:'FILL' 1")}>{heroNotifying ? 'notifications_active' : 'notifications'}</span>
+              {heroNotifying ? "You're on the list!" : 'Notify me when it drops'}
+            </button>
           </div>
         </div>
 
         {/* daily spin card */}
-        <div style={s("border-radius:22px;padding:16px;background:#fff;box-shadow:0 6px 18px rgba(30,18,51,.07);display:flex;align-items:center;gap:15px")}>
+        <div style={s("position:relative;border-radius:22px;padding:16px;background:#fff;box-shadow:0 6px 18px rgba(30,18,51,.07);display:flex;align-items:center;gap:15px")}>
           <div style={s("position:relative;flex:none;width:104px;height:104px")}>
-            <div style={s("position:absolute;inset:0;border-radius:50%;background:conic-gradient(#FF3D9A 0 60deg,#FFC700 60deg 120deg,#12B5A0 120deg 180deg,#8B5CF6 180deg 240deg,#FF6B3D 240deg 300deg,#3B82F6 300deg 360deg);box-shadow:0 0 0 5px #fff,0 6px 16px rgba(30,18,51,.18);animation:yspin 9s linear infinite")} />
+            <div style={s(`position:absolute;inset:0;border-radius:50%;background:conic-gradient(#FF3D9A 0 60deg,#FFC700 60deg 120deg,#12B5A0 120deg 180deg,#8B5CF6 180deg 240deg,#FF6B3D 240deg 300deg,#3B82F6 300deg 360deg);box-shadow:0 0 0 5px #fff,0 6px 16px rgba(30,18,51,.18);${spinDeg > 0 ? `transform:rotate(${spinDeg}deg);transition:transform ${SPIN_TRAVEL_MS}ms cubic-bezier(.16,.84,.22,1)` : 'animation:yspin 9s linear infinite'}`)} />
             <div style={s("position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(30,18,51,.2);display:flex;align-items:center;justify-content:center;font:700 14px 'Fredoka';color:#8B5CF6")}>Y</div>
             <div style={s("position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:13px solid #1E1233;z-index:2")} />
+            {reward !== null && (
+              <div style={s("position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;background:#1E1233;color:#FFC700;font:700 15px 'Fredoka';padding:7px 12px;border-radius:12px;white-space:nowrap;box-shadow:0 6px 16px rgba(30,18,51,.3);animation:ypop .45s ease both")}>
+                +{reward} coins!
+              </div>
+            )}
           </div>
           <div style={s("flex:1")}>
             <div style={s("font:700 17px 'Fredoka';color:#1E1233")}>Daily Spin</div>
-            <div style={s("font:600 12.5px/1.35 'Nunito';color:#6B5E76;margin:2px 0 11px")}>1 free spin left &middot; win coins, rare drops &amp; XP</div>
-            <div style={s("display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#8B5CF6,#B07CFF);color:#fff;font:700 14px 'Fredoka';padding:10px 18px;border-radius:14px;box-shadow:0 4px 0 #6D28D9")}><span className="mi" style={s("font-size:18px;font-variation-settings:'FILL' 1")}>casino</span>SPIN TO WIN</div>
+            <div style={s("font:600 12.5px/1.35 'Nunito';color:#6B5E76;margin:2px 0 11px")}>
+              {reward !== null ? `You won ${reward} coins — nice pull!` : canSpin ? '1 free spin left · win coins, rare drops & XP' : 'Free spin used · resets at midnight'}
+            </div>
+            <button
+              type="button"
+              onClick={handleSpin}
+              disabled={spinning || !canSpin}
+              style={s(`display:inline-flex;align-items:center;gap:6px;border:0;background:${canSpin ? 'linear-gradient(135deg,#8B5CF6,#B07CFF)' : '#D9D2E5'};color:#fff;font:700 14px 'Fredoka';padding:10px 18px;border-radius:14px;box-shadow:${canSpin ? '0 4px 0 #6D28D9' : 'none'};cursor:${canSpin && !spinning ? 'pointer' : 'default'}`)}
+            >
+              <span className="mi" style={s(`font-size:18px;font-variation-settings:'FILL' 1;${spinning ? 'animation:yspin 1s linear infinite' : ''}`)}>casino</span>
+              {spinLabel}
+            </button>
           </div>
         </div>
 
@@ -85,11 +158,20 @@ export default function Drops({ dropH, dropM, dropS }) {
 
         {/* drops grid */}
         <div style={s("display:grid;grid-template-columns:1fr 1fr;gap:12px")}>
-          {dropItems.map((item) => (
+          {drops.map((item) => (
             <div key={item.id} style={s("background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 0 rgba(30,18,51,.05),0 10px 20px rgba(30,18,51,.06)")}>
               <div style={s(`position:relative;height:116px;background:${item.stripe}`)}>
                 <div style={s("position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:#1E1233;color:#fff;font:700 10px 'Fredoka'")}><span style={s("width:6px;height:6px;border-radius:50%;background:#FF6B3D;animation:ydot 1.3s infinite")} />{item.left} left</div>
-                <div style={s("position:absolute;top:7px;right:7px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(30,18,51,.12)")}><span className="mi" style={s("font-size:16px;color:#8B5CF6")}>notifications</span></div>
+                <button
+                  type="button"
+                  aria-label={item.notifying ? 'Stop watching drop' : 'Watch drop'}
+                  onClick={() => handleNotify(item.id)}
+                  style={s(`position:absolute;top:7px;right:7px;width:28px;height:28px;border:0;border-radius:50%;background:${item.notifying ? '#8B5CF6' : 'rgba(255,255,255,.88)'};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(30,18,51,.12);cursor:pointer;padding:0;transition:background .2s ease`)}
+                >
+                  <span className="mi" style={s(`font-size:16px;color:${item.notifying ? '#fff' : '#8B5CF6'};${item.notifying ? "font-variation-settings:'FILL' 1" : ''}`)}>
+                    {item.notifying ? 'notifications_active' : 'notifications'}
+                  </span>
+                </button>
                 <div style={s("position:absolute;bottom:7px;left:50%;transform:translateX(-50%);padding:2px 8px;border-radius:7px;background:rgba(255,255,255,.85);font:600 9.5px ui-monospace,Menlo,monospace;color:#6B5E76;white-space:nowrap")}>{item.img}</div>
               </div>
               <div style={s("padding:9px 10px 11px")}>
@@ -109,19 +191,6 @@ export default function Drops({ dropH, dropM, dropS }) {
         </div>
 
       </div>
-
-      {/* ── bottom nav ── */}
-      <div style={s("position:sticky;bottom:0;z-index:30;background:#fff;box-shadow:0 -3px 18px rgba(30,18,51,.08);padding:9px 14px 22px;display:flex;align-items:flex-end;justify-content:space-between")}>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#8B5CF6;font-variation-settings:'FILL' 1")}>home</span><span style={s("font:700 10px 'Fredoka';color:#8B5CF6")}>Home</span></div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>bolt</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>Drops</span></div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:5px")}>
-          <div style={s("margin-top:-26px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#FFC700);box-shadow:0 7px 16px rgba(139,92,246,.42),0 0 0 4px #fff;display:flex;align-items:center;justify-content:center;animation:ypulse 2.4s ease-in-out infinite")}><span className="mi" style={s("font-size:28px;color:#fff;font-variation-settings:'FILL' 1")}>casino</span></div>
-          <span style={s("font:700 10px 'Fredoka';color:#8B5CF6;margin-top:-2px")}>Spin</span>
-        </div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>favorite</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>Saved</span></div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>person</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>You</span></div>
-      </div>
-
     </div>
   );
 }

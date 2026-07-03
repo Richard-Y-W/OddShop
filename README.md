@@ -1,39 +1,52 @@
-# OddShop
+# Yoink!
 
-All the joy of buying, none of the financial pain.
+A fake-money shopping toy: browse a playful collectibles market, claim daily
+coins, spin the wheel, yoink items into your cart, and watch a cartoon glove
+snatch your order off the screen while an accelerated tracker "delivers" it
+to your Pocket.
 
-OddShop is a fake online shopping dopamine toy: browse whimsical products, fill a cart, choose pretend checkout options, follow the tiny delivery truck on a map, and celebrate when the order says "It's here."
+## Quick start
 
+```bash
+cd yoink
+npm install
+npm run dev
 ```
-      _________
-     /_______/|
-    | ODD   | |
-    | SHOP  | /
-    |_______|/
-       v  v
+
+Open the URL Vite prints (usually `http://localhost:5173`). The JSON API is
+served by the dev server itself — no second process needed.
+
+Production check:
+
+```bash
+cd yoink
+npm run build
+npm run serve   # serves dist/ + API at http://localhost:5175
 ```
 
-## What It Does
+Tests:
 
-- Polished fake storefront with search, categories, product pages, ratings, and reviews
-- Wishlist and cart
-- Checkout flow with only pretend choices
-- No real address, no real card, no personal information
-- Fake shipping tracker with a mini map
-- Confetti and a cute delivery moment when the order arrives
-- Order history stored locally in the browser
-- Recently bought and related item rails powered by local browser state
+```bash
+cd yoink
+npm test
+```
 
-## Recommendations
+## What's inside
 
-The MVP does not use vector search or a server profile. Related items are ranked locally from product category, tags, price similarity, and rating. Recently bought items come from the fake order history in `localStorage`.
+- **React + Vite frontend** (`yoink/src`) — screens for the market feed,
+  product detail, checkout, drops, pocket, and order tracking, all inside an
+  iOS device frame with the glove-hand splash animation.
+- **Zero-dependency Node backend** (`yoink/server`) — wallet with a daily
+  allowance and streak bonuses, a once-a-day spin wheel, order placement that
+  spends your coins, accelerated shipment stages (processing → packed →
+  shipped → out for delivery → delivered), and a collection that fills up as
+  orders arrive. State persists to `yoink/server/db.json` (gitignored) —
+  delete it to reset the demo.
+- Everything is fake: no real money, payments, or addresses.
 
-## Run It
+## Repo layout
 
-Open `index.html` in a browser.
-
-No build step, backend, account, payment system, or install is required.
-
-## Principle
-
-OddShop should feel like the dopamine loop of online shopping without asking users for anything sensitive. The checkout ritual is the toy.
+- `yoink/` — the app (start here)
+- `app.js`, `index.html`, `styles.css` — the older OddShop static prototype
+- `Claude Design Upload.zip`, `React App Source.zip` — design sources the app
+  was built from

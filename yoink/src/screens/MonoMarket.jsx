@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { s } from '../style.js';
 import { appendMarketFeed, makeMarketFeed, MARKET_MAX_ITEMS, MARKET_PAGE_SIZE, marketCats } from '../data.js';
+import { fetchFeed } from '../api.js';
 import { marketTheme } from '../marketTheme.js';
 
 const {
@@ -103,50 +104,31 @@ function ListingCard({ item, onOpenProduct = () => {} }) {
   );
 }
 
-function BottomNav() {
-  const items = [
-    ['home', 'Home', true],
-    ['search', 'Search', false],
-    ['bookmark', 'Watching', false],
-    ['person', 'Account', false],
-  ];
-
-  return (
-    <div style={s("position:sticky;bottom:0;z-index:30;background:#fff;box-shadow:0 -3px 16px rgba(23,19,38,.07);padding:9px 14px 22px;display:flex;align-items:flex-end;justify-content:space-between")}>
-      {items.slice(0, 2).map(([icon, label, active]) => (
-        <div key={label} style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}>
-          <span className="mi" style={s(`font-size:24px;color:${active ? ink : '#AFADBA'};${active ? "font-variation-settings:'FILL' 1" : ''}`)}>{icon}</span>
-          <span style={s(`font:${active ? '700' : '600'} 10px 'Fredoka';color:${active ? ink : '#AFADBA'}`)}>{label}</span>
-        </div>
-      ))}
-      <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:5px")}>
-        <div style={s(`margin-top:-26px;width:58px;height:58px;border-radius:18px;background:${ink};box-shadow:0 7px 16px rgba(23,19,38,.4),0 0 0 4px #fff;display:flex;align-items:center;justify-content:center`)}>
-          <span className="mi" style={s("font-size:30px;color:#fff")}>add</span>
-        </div>
-        <span style={s(`font:700 10px 'Fredoka';color:${ink};margin-top:-2px`)}>Sell</span>
-      </div>
-      {items.slice(2).map(([icon, label]) => (
-        <div key={label} style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}>
-          <span className="mi" style={s("font-size:24px;color:#AFADBA")}>{icon}</span>
-          <span style={s("font:600 10px 'Fredoka';color:#AFADBA")}>{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default function MonoMarket({ onOpenProduct = () => {} }) {
+export default function MonoMarket({ onOpenProduct = () => {}, onOpenCart = () => {}, cartCount = 0, balance = 0 }) {
   const [feed, setFeed] = useState(() => makeMarketFeed(0, MARKET_PAGE_SIZE));
   const [selectedCategory, setSelectedCategory] = useState('For you');
   const feedEndRef = useRef(null);
   const lastLoadRef = useRef(0);
   const hasMore = feed.length < MARKET_MAX_ITEMS;
 
+  const feedLengthRef = useRef(MARKET_PAGE_SIZE);
+  useEffect(() => {
+    feedLengthRef.current = feed.length;
+  }, [feed]);
+
+  // Next pages come from the backend; the local generator (same logic the
+  // server uses) stays as an offline fallback so scrolling never dead-ends.
   const loadMore = useCallback(() => {
     const now = Date.now();
     if (now - lastLoadRef.current < 200) return;
     lastLoadRef.current = now;
-    setFeed((current) => appendMarketFeed(current));
+    const start = feedLengthRef.current;
+    fetchFeed(start, MARKET_PAGE_SIZE).then((page) => {
+      if (!Array.isArray(page.items) || page.items.length === 0) return;
+      setFeed((existing) => (existing.length === start ? existing.concat(page.items) : existing));
+    }).catch(() => {
+      setFeed((existing) => (existing.length === start ? appendMarketFeed(existing) : existing));
+    });
   }, []);
 
   const categoryChips = useMemo(() => marketCats, []);
@@ -201,12 +183,24 @@ export default function MonoMarket({ onOpenProduct = () => {} }) {
           <div style={s("display:flex;align-items:center;gap:7px")}>
             <div style={s(`display:flex;align-items:center;gap:5px;background:${currencyButtonBackground};border:1.5px solid ${currencyButtonBackground};border-radius:999px;padding:4px 10px 4px 5px`)}>
               <span style={s(`width:16px;height:16px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 9px 'Fredoka';color:${currencyButtonBackground};flex:none`)}>Y</span>
-              <span style={s("font:700 12px 'Fredoka';color:#fff")}>2,480</span>
+              <span style={s("font:700 12px 'Fredoka';color:#fff")}>{balance.toLocaleString()}</span>
             </div>
-            <div style={s(`position:relative;width:36px;height:36px;border-radius:11px;background:${wash};display:flex;align-items:center;justify-content:center`)}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Open cart"
+              onClick={onOpenCart}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onOpenCart();
+                }
+              }}
+              style={s(`position:relative;width:36px;height:36px;border-radius:11px;background:${wash};display:flex;align-items:center;justify-content:center;cursor:pointer`)}
+            >
               <span className="mi" style={s(`font-size:21px;color:${ink}`)}>shopping_cart</span>
               <span style={s(`position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:${cartCountBackground};color:#fff;font:700 9.5px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff`)}>
-                2
+                {cartCount}
               </span>
             </div>
           </div>
@@ -262,8 +256,6 @@ export default function MonoMarket({ onOpenProduct = () => {} }) {
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

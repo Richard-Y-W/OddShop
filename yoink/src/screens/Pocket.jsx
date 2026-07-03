@@ -1,10 +1,36 @@
+import { useEffect, useState } from 'react';
 import { s } from '../style.js';
 import Mochi from '../components/Mochi.jsx';
-import { sets, streak, pocketItems } from '../data.js';
+import { sets, streak as streakWeek, pocketItems } from '../data.js';
+import { claimAllowance, fetchCollection } from '../api.js';
 
 const coinBadge = 'radial-gradient(circle at 35% 28%,#FFE9A8,#FFC700 62%,#E0A400)';
 
-export default function Pocket() {
+export default function Pocket({ balance = 0, streak = 0, canClaim = false, onWallet = () => {} }) {
+  const [collection, setCollection] = useState([]);
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(null);
+
+  useEffect(() => {
+    fetchCollection().then((data) => {
+      if (Array.isArray(data.collection)) setCollection(data.collection);
+    }).catch(() => {});
+  }, []);
+
+  const handleClaim = async () => {
+    if (claiming || !canClaim) return;
+    setClaiming(true);
+    try {
+      const result = await claimAllowance();
+      if (result.ok) {
+        setClaimed({ amount: result.amount, bonus: result.bonus });
+        if (result.wallet) onWallet(result.wallet);
+      }
+    } finally {
+      setClaiming(false);
+    }
+  };
+
   return (
     <div style={s("min-height:100%;background:#F1FBF8;display:flex;flex-direction:column;font-family:'Nunito',sans-serif;color:#1E1233")}>
 
@@ -15,10 +41,10 @@ export default function Pocket() {
           <div style={s("display:flex;align-items:center;gap:7px")}>
             <div style={s("display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #FFE39A;border-radius:999px;padding:5px 11px 5px 6px")}>
               <span style={s(`width:18px;height:18px;border-radius:50%;background:${coinBadge};display:inline-flex;align-items:center;justify-content:center;font:700 10px 'Fredoka';color:#8A5A00;box-shadow:0 1px 0 #C98B00;flex:none`)}>Y</span>
-              <span style={s("font:700 13px 'Fredoka';color:#9A6B00")}>2,480</span>
+              <span style={s("font:700 13px 'Fredoka';color:#9A6B00")}>{balance.toLocaleString()}</span>
             </div>
             <div style={s("display:flex;align-items:center;gap:3px;background:#fff;border:1.5px solid #FFC2A8;border-radius:999px;padding:5px 9px 5px 7px")}>
-              <span className="mi" style={s("font-size:17px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 13px 'Fredoka';color:#D2491F")}>7</span>
+              <span className="mi" style={s("font-size:17px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 13px 'Fredoka';color:#D2491F")}>{streak}</span>
             </div>
             <div style={s("position:relative;width:38px;height:38px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center")}>
               <span className="mi" style={s("font-size:22px;color:#1E1233")}>shopping_bag</span>
@@ -54,13 +80,32 @@ export default function Pocket() {
         </div>
 
         {/* streak card */}
-        <div style={s("border-radius:18px;padding:13px 14px;background:#fff;box-shadow:0 4px 14px rgba(30,18,51,.06)")}>
-          <div style={s("display:flex;align-items:center;justify-content:space-between;margin-bottom:12px")}>
-            <div style={s("display:flex;align-items:center;gap:6px")}><span className="mi" style={s("font-size:20px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 14px 'Fredoka';color:#1E1233")}>7-day streak!</span></div>
-            <div style={s("font:700 11px 'Nunito';color:#FF6B3D")}>+50 coins / day</div>
+        <div style={s("position:relative;border-radius:18px;padding:13px 14px;background:#fff;box-shadow:0 4px 14px rgba(30,18,51,.06)")}>
+          <div style={s("display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px")}>
+            <div style={s("display:flex;align-items:center;gap:6px")}><span className="mi" style={s("font-size:20px;color:#FF6B3D;font-variation-settings:'FILL' 1")}>local_fire_department</span><span style={s("font:700 14px 'Fredoka';color:#1E1233")}>{streak}-day streak!</span></div>
+            {canClaim ? (
+              <button
+                type="button"
+                onClick={handleClaim}
+                disabled={claiming}
+                style={s(`border:0;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#FF6B3D,#FF3D9A);color:#fff;font:700 12px 'Fredoka';padding:8px 13px;border-radius:11px;box-shadow:0 3px 0 #C93A17;cursor:pointer;${claiming ? 'opacity:.7' : ''}`)}
+              >
+                <span className="mi" style={s("font-size:15px;font-variation-settings:'FILL' 1")}>redeem</span>
+                {claiming ? 'Claiming…' : 'Claim daily coins'}
+              </button>
+            ) : claimed ? (
+              <div style={s("font:700 12px 'Fredoka';color:#10B5A0;animation:ypop .45s ease both")}>
+                +{claimed.amount + claimed.bonus} coins{claimed.bonus > 0 ? ' (streak bonus!)' : ''}
+              </div>
+            ) : (
+              <div style={s("display:inline-flex;align-items:center;gap:4px;font:700 12px 'Fredoka';color:#10B5A0")}>
+                <span className="mi" style={s("font-size:15px;font-variation-settings:'FILL' 1")}>check_circle</span>
+                Claimed today
+              </div>
+            )}
           </div>
           <div style={s("display:flex;justify-content:space-between")}>
-            {streak.map((day, i) => (
+            {streakWeek.map((day, i) => (
               <div key={i} style={s("display:flex;flex-direction:column;align-items:center;gap:5px")}>
                 {day.done && (
                   <div style={s("width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#FF6B3D,#FF3D9A);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(255,61,154,.28)")}><span className="mi" style={s("font-size:17px;color:#fff;font-variation-settings:'FILL' 1")}>check</span></div>
@@ -73,6 +118,32 @@ export default function Pocket() {
             ))}
           </div>
         </div>
+
+        {collection.length > 0 && (
+          <>
+            <div style={s("display:flex;align-items:baseline;justify-content:space-between")}>
+              <div style={s("font:700 18px 'Fredoka';color:#1E1233")}>Fresh from the mail</div>
+              <div style={s("font:700 13px 'Nunito';color:#10B5A0")}>{collection.length} yoink&#8217;d</div>
+            </div>
+            <div style={s("display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px")}>
+              {collection.map((item) => (
+                <div key={item.id} style={s("background:#fff;border-radius:16px;padding:7px;box-shadow:0 4px 14px rgba(30,18,51,.06);animation:ypop .4s ease both")}>
+                  <div style={s(`position:relative;aspect-ratio:1/1;border-radius:11px;overflow:hidden;background:${item.imageStripe}`)}>
+                    {item.quantity > 1 && (
+                      <span style={s("position:absolute;top:4px;right:4px;min-width:19px;height:19px;padding:0 4px;border-radius:999px;background:#10B5A0;color:#fff;font:700 10px 'Fredoka';display:flex;align-items:center;justify-content:center")}>
+                        x{item.quantity}
+                      </span>
+                    )}
+                    <div style={s("position:absolute;bottom:4px;right:4px;width:17px;height:17px;border-radius:50%;background:#10B5A0;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.2)")}>
+                      <span className="mi" style={s("font-size:12px;color:#fff;font-variation-settings:'FILL' 1")}>check</span>
+                    </div>
+                  </div>
+                  <div style={s("font:700 10.5px/1.25 'Nunito';color:#1E1233;margin-top:6px;height:26px;overflow:hidden")}>{item.title}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <div style={s("display:flex;align-items:baseline;justify-content:space-between")}>
           <div style={s("font:700 18px 'Fredoka';color:#1E1233")}>Your collections</div>
@@ -129,20 +200,6 @@ export default function Pocket() {
         </div>
 
       </div>
-
-      {/* ── bottom nav ── */}
-      <div style={s("position:sticky;bottom:0;z-index:30;background:#fff;box-shadow:0 -3px 18px rgba(30,18,51,.08);padding:9px 14px 22px;display:flex;align-items:flex-end;justify-content:space-between")}>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#10B5A0;font-variation-settings:'FILL' 1")}>home</span><span style={s("font:700 10px 'Fredoka';color:#10B5A0")}>Home</span></div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>search</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>Search</span></div>
-        <div style={s("flex:1;display:flex;justify-content:center")}>
-          <div style={s("margin-top:-24px;width:58px;height:58px;border-radius:50%;background:#EAFBF6;box-shadow:0 7px 16px rgba(16,181,160,.4),0 0 0 4px #fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px")}>
-            <Mochi color="#10B5A0" say="" size={40} />
-          </div>
-        </div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>redeem</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>Rewards</span></div>
-        <div style={s("flex:1;display:flex;flex-direction:column;align-items:center;gap:3px")}><span className="mi" style={s("font-size:25px;color:#B0A4BC")}>person</span><span style={s("font:600 10px 'Fredoka';color:#B0A4BC")}>You</span></div>
-      </div>
-
     </div>
   );
 }

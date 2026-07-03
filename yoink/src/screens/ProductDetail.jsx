@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { s } from '../style.js';
 import { makeProductDetail, makeStarRow } from '../productDetailData.js';
 import { marketTheme } from '../marketTheme.js';
+import AddToCartMotion from '../components/AddToCartMotion.jsx';
 import Mochi from '../components/Mochi.jsx';
 
 const { ink, wash, line, muted, brand, attentionBadgeBackground, attentionBadgeText } = marketTheme;
@@ -35,16 +36,24 @@ function SectionTitle({ children }) {
   return <div style={s(`font:700 18px 'Fredoka';color:${ink};margin:26px 0 9px`)}>{children}</div>;
 }
 
-export default function ProductDetail({ listing, onBack }) {
+export default function ProductDetail({ listing, onBack, cartCount = 0, onAddToCart = () => {}, onOpenCart = () => {} }) {
   const detail = useMemo(() => makeProductDetail(listing), [listing]);
   const [qty, setQty] = useState(1);
   const [favorite, setFavorite] = useState(false);
+  const [cartMotionKey, setCartMotionKey] = useState(0);
 
   const incQty = () => setQty((current) => Math.min(current + 1, detail.quantityAvailable));
   const decQty = () => setQty((current) => Math.max(current - 1, 1));
+  const primaryAddsToCart = detail.primaryCta === 'Add to cart';
+  const secondaryAddsToCart = detail.secondaryCta === 'Add to cart';
+  const playCartMotion = () => {
+    onAddToCart(qty);
+    setCartMotionKey((current) => current + 1);
+  };
 
   return (
-    <div style={s(`min-height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Nunito',sans-serif;color:${ink}`)}>
+    <div style={s(`position:relative;min-height:100%;overflow:hidden;background:#fff;display:flex;flex-direction:column;font-family:'Nunito',sans-serif;color:${ink}`)}>
+      <AddToCartMotion playKey={cartMotionKey} cartCount={cartCount} />
       <div style={s(`position:relative;height:336px;flex:none;background:${detail.imageStripe};border-radius:0 0 26px 26px;overflow:hidden`)}>
         <div style={s("position:absolute;top:0;left:0;height:100%;width:34%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:yshine 4s ease-in-out infinite")} />
         <div style={s("position:absolute;top:52px;left:14px")}>
@@ -52,6 +61,12 @@ export default function ProductDetail({ listing, onBack }) {
         </div>
         <div style={s("position:absolute;top:52px;right:14px;display:flex;gap:8px")}>
           <IconButton icon="favorite" label="Favorite item" onClick={() => setFavorite((current) => !current)} filled={favorite} color={favorite ? brand : ink} />
+          <div style={s("position:relative")}>
+            <IconButton icon="shopping_cart" label="Open cart" onClick={onOpenCart} />
+            <span style={s(`position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:${brand};color:#fff;font:700 9.5px 'Fredoka';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff`)}>
+              {cartCount}
+            </span>
+          </div>
           <IconButton icon="share" label="Share item" />
         </div>
         <div style={s(`position:absolute;top:54px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;padding:5px 12px 5px 9px;border-radius:999px;background:${attentionBadgeBackground};font:700 11px 'Fredoka';color:${attentionBadgeText};box-shadow:0 3px 10px rgba(23,19,38,.14)`)}>
@@ -143,11 +158,11 @@ export default function ProductDetail({ listing, onBack }) {
           </button>
         </div>
 
-        <button type="button" style={s(`display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;background:${brand};color:#fff;font:700 16px 'Fredoka';padding:16px;border:0;border-radius:16px;box-shadow:0 5px 0 #4B3BA6;cursor:pointer`)}>
+        <button type="button" onClick={primaryAddsToCart ? playCartMotion : undefined} style={s(`display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;background:${brand};color:#fff;font:700 16px 'Fredoka';padding:16px;border:0;border-radius:16px;box-shadow:0 5px 0 #4B3BA6;cursor:pointer`)}>
           <span className="mi" style={s("font-size:20px")}>add_shopping_cart</span>
           {detail.primaryCta}
         </button>
-        <button type="button" style={s(`display:flex;align-items:center;justify-content:center;gap:8px;margin-top:13px;background:${ink};color:#fff;font:700 16px 'Fredoka';padding:16px;border:0;border-radius:16px;box-shadow:0 5px 0 #000;cursor:pointer`)}>
+        <button type="button" onClick={secondaryAddsToCart ? playCartMotion : undefined} style={s(`display:flex;align-items:center;justify-content:center;gap:8px;margin-top:13px;background:${ink};color:#fff;font:700 16px 'Fredoka';padding:16px;border:0;border-radius:16px;box-shadow:0 5px 0 #000;cursor:pointer`)}>
           <span className="mi" style={s("font-size:20px;font-variation-settings:'FILL' 1")}>bolt</span>
           {detail.secondaryCta}
         </button>
